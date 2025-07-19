@@ -1813,11 +1813,11 @@ int rtw_os_ndev_register(_adapter *adapter, const char *name)
 	u8 rtnl_lock_needed = rtw_rtnl_lock_needed(dvobj);
 
 #ifdef CONFIG_RTW_NAPI
-	netif_napi_add(ndev, &adapter->napi, rtw_recv_napi_poll
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(6, 1, 0))
-	, RTL_NAPI_WEIGHT
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0))
+	netif_napi_add_weight(ndev, &adapter->napi, rtw_recv_napi_poll, RTL_NAPI_WEIGHT);
+#else
+	netif_napi_add(ndev, &adapter->napi, rtw_recv_napi_poll, RTL_NAPI_WEIGHT);
 #endif
-	);
 #endif /* CONFIG_RTW_NAPI */
 
 #if defined(CONFIG_IOCTL_CFG80211)
@@ -3036,7 +3036,7 @@ _adapter *rtw_drv_add_vir_if(_adapter *primary_padapter,
 	* If it is 1, the address is locally administered
 	*/
 	mac[0] |= BIT(1);
-	if (padapter->iface_id > IFACE_ID1)
+	if (padapter->iface_id >= IFACE_ID1)
 		mac[4] ^= BIT(padapter->iface_id);
 
 	_rtw_memcpy(adapter_mac_addr(padapter), mac, ETH_ALEN);
