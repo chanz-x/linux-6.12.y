@@ -1,2091 +1,2371 @@
-# SPDX-License-Identifier: GPL-2.0
-VERSION = 6
-PATCHLEVEL = 12
-SUBLEVEL = 39
-EXTRAVERSION =
-NAME = Baby Opossum Posse
+ccflags-y += -O1
+#ccflags-y += -O3
+#ccflags-y += -Wall
+#ccflags-y += -Wextra
+#ccflags-y += -Werror
+#ccflags-y += -pedantic
+#ccflags-y += -Wshadow -Wpointer-arith -Wcast-qual -Wstrict-prototypes -Wmissing-prototypes
 
-# *DOCUMENTATION*
-# To see a list of typical targets execute "make help"
-# More info can be located in ./README
-# Comments in this file are targeted only to the developer, do not
-# expect to learn how to build the kernel reading this file.
+ccflags-y += -Wno-unused-variable
+#ccflags-y += -Wno-unused-value
+#ccflags-y += -Wno-unused-label
+#ccflags-y += -Wno-unused-parameter
+ccflags-y += -Wno-unused-function
+ccflags-y += -Wno-unused
+#ccflags-y += -Wno-uninitialized
 
-ifeq ($(filter output-sync,$(.FEATURES)),)
-$(error GNU Make >= 4.0 is required. Your Make version is $(MAKE_VERSION))
+GCC_VER_49 := $(shell echo `$(CC) -dumpversion | cut -f1-2 -d.` \>= 4.9 | bc )
+ifeq ($(GCC_VER_49),1)
+ccflags-y += -Wno-date-time	# Fix compile error && warning on gcc 4.9 and later
 endif
 
-$(if $(filter __%, $(MAKECMDGOALS)), \
-	$(error targets prefixed with '__' are only for internal use))
+ccflags-y += -I$(src)/include
 
-# That's our default target when none is given on the command line
-PHONY := __all
-__all:
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_CONCURRENT_MODE
 
-# We are using a recursive build, so we need to do a little thinking
-# to get the ordering right.
-#
-# Most importantly: sub-Makefiles should only ever modify files in
-# their own directory. If in some directory we have a dependency on
-# a file in another dir (which doesn't happen often, but it's often
-# unavoidable when linking the built-in.a targets which finally
-# turn into vmlinux), we will call a sub make in that other dir, and
-# after that we are sure that everything which is in that other dir
-# is now up to date.
-#
-# The only cases where we need to modify files which have global
-# effects are thus separated out and done before the recursive
-# descending is started. They are now explicitly listed as the
-# prepare rule.
+ldflags-y += --strip-debug
 
-this-makefile := $(lastword $(MAKEFILE_LIST))
-abs_srctree := $(realpath $(dir $(this-makefile)))
-abs_objtree := $(CURDIR)
+CONFIG_AUTOCFG_CP = n
 
-ifneq ($(sub_make_done),1)
+########################## WIFI IC ############################
+CONFIG_MULTIDRV = n
+CONFIG_RTL8188E = n
+CONFIG_RTL8812A = n
+CONFIG_RTL8821A = n
+CONFIG_RTL8192E = n
+CONFIG_RTL8723B = n
+CONFIG_RTL8814A = n
+CONFIG_RTL8723C = n
+CONFIG_RTL8188F = y
+CONFIG_RTL8188GTV = n
+CONFIG_RTL8822B = n
+CONFIG_RTL8723D = n
+CONFIG_RTL8821C = n
+CONFIG_RTL8710B = n
+CONFIG_RTL8192F = n
+CONFIG_RTL8822C = n
+######################### Interface ###########################
+CONFIG_USB_HCI = n
+CONFIG_PCI_HCI = n
+CONFIG_SDIO_HCI = y
+CONFIG_GSPI_HCI = n
+########################## Features ###########################
+CONFIG_MP_INCLUDED = y
+CONFIG_POWER_SAVING = y
+CONFIG_IPS_MODE = default
+CONFIG_LPS_MODE = default
+CONFIG_USB_AUTOSUSPEND = n
+CONFIG_HW_PWRP_DETECTION = n
+CONFIG_BT_COEXIST = n
+CONFIG_WAPI_SUPPORT = n
+CONFIG_EFUSE_CONFIG_FILE = y
+CONFIG_EXT_CLK = n
+CONFIG_TRAFFIC_PROTECT = n
+CONFIG_LOAD_PHY_PARA_FROM_FILE = y
+CONFIG_TXPWR_BY_RATE = y
+CONFIG_TXPWR_BY_RATE_EN = y
+CONFIG_TXPWR_LIMIT = y
+CONFIG_TXPWR_LIMIT_EN = n
+CONFIG_RTW_CHPLAN = 0xFF
+CONFIG_RTW_ADAPTIVITY_EN = disable
+CONFIG_RTW_ADAPTIVITY_MODE = normal
+CONFIG_SIGNAL_SCALE_MAPPING = n
+CONFIG_80211W = n
+CONFIG_REDUCE_TX_CPU_LOADING = n
+CONFIG_BR_EXT = y
+CONFIG_TDLS = n
+CONFIG_WIFI_MONITOR = n
+CONFIG_MCC_MODE = n
+CONFIG_APPEND_VENDOR_IE_ENABLE = n
+CONFIG_RTW_NAPI = n
+CONFIG_RTW_GRO = n
+CONFIG_RTW_NETIF_SG = y
+CONFIG_RTW_IPCAM_APPLICATION = n
+CONFIG_RTW_REPEATER_SON = n
+CONFIG_RTW_WIFI_HAL = n
+CONFIG_ICMP_VOQ = n
+CONFIG_IP_R_MONITOR = n #arp VOQ and high rate
+########################## Debug ###########################
+CONFIG_RTW_DEBUG = y
+# default log level is _DRV_INFO_ = 4,
+# please refer to "How_to_set_driver_debug_log_level.doc" to set the available level.
+CONFIG_RTW_LOG_LEVEL = 4
 
-# Do not use make's built-in rules and variables
-# (this increases performance and avoids hard-to-debug behaviour)
-MAKEFLAGS += -rR
+# enable /proc/net/rtlxxxx/ debug interfaces
+CONFIG_PROC_DEBUG = y
 
-# Avoid funny character set dependencies
-unexport LC_ALL
-LC_COLLATE=C
-LC_NUMERIC=C
-export LC_COLLATE LC_NUMERIC
+######################## Wake On Lan ##########################
+CONFIG_WOWLAN = n
+#bit2: deauth, bit1: unicast, bit0: magic pkt.
+CONFIG_WAKEUP_TYPE = 0x7
+CONFIG_WOW_LPS_MODE = default
+#bit0: disBBRF off, #bit1: Wireless remote controller (WRC)
+CONFIG_SUSPEND_TYPE = 0
+CONFIG_WOW_STA_MIX = n
+CONFIG_GPIO_WAKEUP = n
+CONFIG_WAKEUP_GPIO_IDX = default
+CONFIG_HIGH_ACTIVE_DEV2HST = n
+######### only for USB #########
+CONFIG_ONE_PIN_GPIO = n
+CONFIG_HIGH_ACTIVE_HST2DEV = n
+CONFIG_PNO_SUPPORT = n
+CONFIG_PNO_SET_DEBUG = n
+CONFIG_AP_WOWLAN = n
+######### Notify SDIO Host Keep Power During Syspend ##########
+CONFIG_RTW_SDIO_PM_KEEP_POWER = y
+###################### MP HW TX MODE FOR VHT #######################
+CONFIG_MP_VHT_HW_TX_MODE = n
+###################### Platform Related #######################
+CONFIG_PLATFORM_I386_PC = n
+CONFIG_PLATFORM_ANDROID_X86 = n
+CONFIG_PLATFORM_ANDROID_INTEL_X86 = n
+CONFIG_PLATFORM_JB_X86 = n
+CONFIG_PLATFORM_ARM_S3C2K4 = n
+CONFIG_PLATFORM_ARM_PXA2XX = n
+CONFIG_PLATFORM_ARM_S3C6K4 = n
+CONFIG_PLATFORM_MIPS_RMI = n
+CONFIG_PLATFORM_RTD2880B = n
+CONFIG_PLATFORM_MIPS_AR9132 = n
+CONFIG_PLATFORM_RTK_DMP = n
+CONFIG_PLATFORM_MIPS_PLM = n
+CONFIG_PLATFORM_MSTAR389 = n
+CONFIG_PLATFORM_MT53XX = n
+CONFIG_PLATFORM_ARM_MX51_241H = n
+CONFIG_PLATFORM_FS_MX61 = n
+CONFIG_PLATFORM_ACTIONS_ATJ227X = n
+CONFIG_PLATFORM_TEGRA3_CARDHU = n
+CONFIG_PLATFORM_TEGRA4_DALMORE = n
+CONFIG_PLATFORM_ARM_TCC8900 = n
+CONFIG_PLATFORM_ARM_TCC8920 = n
+CONFIG_PLATFORM_ARM_TCC8920_JB42 = n
+CONFIG_PLATFORM_ARM_TCC8930_JB42 = n
+CONFIG_PLATFORM_ARM_RK2818 = n
+CONFIG_PLATFORM_ARM_RK3066 = n
+CONFIG_PLATFORM_ARM_RK3188 = n
+CONFIG_PLATFORM_ARM_URBETTER = n
+CONFIG_PLATFORM_ARM_TI_PANDA = n
+CONFIG_PLATFORM_MIPS_JZ4760 = n
+CONFIG_PLATFORM_DMP_PHILIPS = n
+CONFIG_PLATFORM_MSTAR_TITANIA12 = n
+CONFIG_PLATFORM_MSTAR = n
+CONFIG_PLATFORM_SZEBOOK = n
+CONFIG_PLATFORM_ARM_SUNxI = n
+CONFIG_PLATFORM_ARM_SUN6I = n
+CONFIG_PLATFORM_ARM_SUN7I = n
+CONFIG_PLATFORM_ARM_SUN8I_W3P1 = n
+CONFIG_PLATFORM_ARM_SUN8I_W5P1 = n
+CONFIG_PLATFORM_ACTIONS_ATM702X = n
+CONFIG_PLATFORM_ACTIONS_ATV5201 = n
+CONFIG_PLATFORM_ACTIONS_ATM705X = n
+CONFIG_PLATFORM_ARM_SUN50IW1P1 = n
+CONFIG_PLATFORM_ARM_RTD299X = n
+CONFIG_PLATFORM_ARM_LGE = n
+CONFIG_PLATFORM_ARM_SPREADTRUM_6820 = n
+CONFIG_PLATFORM_ARM_SPREADTRUM_8810 = n
+CONFIG_PLATFORM_ARM_WMT = n
+CONFIG_PLATFORM_TI_DM365 = n
+CONFIG_PLATFORM_MOZART = n
+CONFIG_PLATFORM_RTK119X = n
+CONFIG_PLATFORM_RTK119X_AM = n
+CONFIG_PLATFORM_RTK129X = n
+CONFIG_PLATFORM_RTK390X = n
+CONFIG_PLATFORM_NOVATEK_NT72668 = n
+CONFIG_PLATFORM_HISILICON = n
+CONFIG_PLATFORM_HISILICON_HI3798 = n
+CONFIG_PLATFORM_NV_TK1 = n
+CONFIG_PLATFORM_NV_TK1_UBUNTU = n
+CONFIG_PLATFORM_RTL8197D = n
+CONFIG_PLATFORM_AML_S905 = n
+CONFIG_PLATFORM_ZTE_ZX296716 = n
+########### CUSTOMER ################################
+CONFIG_CUSTOMER_HUAWEI_GENERAL = n
 
-# Avoid interference with shell env settings
-unexport GREP_OPTIONS
+CONFIG_DRVEXT_MODULE = n
 
-# Beautify output
-# ---------------------------------------------------------------------------
-#
-# Most of build commands in Kbuild start with "cmd_". You can optionally define
-# "quiet_cmd_*". If defined, the short log is printed. Otherwise, no log from
-# that command is printed by default.
-#
-# e.g.)
-#    quiet_cmd_depmod = DEPMOD  $(MODLIB)
-#          cmd_depmod = $(srctree)/scripts/depmod.sh $(DEPMOD) $(KERNELRELEASE)
-#
-# A simple variant is to prefix commands with $(Q) - that's useful
-# for commands that shall be hidden in non-verbose mode.
-#
-#    $(Q)$(MAKE) $(build)=scripts/basic
-#
-# If KBUILD_VERBOSE contains 1, the whole command is echoed.
-# If KBUILD_VERBOSE contains 2, the reason for rebuilding is printed.
-#
-# To put more focus on warnings, be less verbose as default
-# Use 'make V=1' to see the full commands
+export TopDIR ?= $(shell pwd)
 
-ifeq ("$(origin V)", "command line")
-  KBUILD_VERBOSE = $(V)
+########### COMMON  #################################
+ifeq ($(CONFIG_GSPI_HCI), y)
+HCI_NAME = gspi
 endif
 
-quiet = quiet_
-Q = @
-
-ifneq ($(findstring 1, $(KBUILD_VERBOSE)),)
-  quiet =
-  Q =
+ifeq ($(CONFIG_SDIO_HCI), y)
+HCI_NAME = sdio
 endif
 
-# If the user is running make -s (silent mode), suppress echoing of
-# commands
-ifneq ($(findstring s,$(firstword -$(MAKEFLAGS))),)
-quiet=silent_
-override KBUILD_VERBOSE :=
+ifeq ($(CONFIG_USB_HCI), y)
+HCI_NAME = usb
 endif
 
-export quiet Q KBUILD_VERBOSE
-
-# Call a source code checker (by default, "sparse") as part of the
-# C compilation.
-#
-# Use 'make C=1' to enable checking of only re-compiled files.
-# Use 'make C=2' to enable checking of *all* source files, regardless
-# of whether they are re-compiled or not.
-#
-# See the file "Documentation/dev-tools/sparse.rst" for more details,
-# including where to get the "sparse" utility.
-
-ifeq ("$(origin C)", "command line")
-  KBUILD_CHECKSRC = $(C)
-endif
-ifndef KBUILD_CHECKSRC
-  KBUILD_CHECKSRC = 0
+ifeq ($(CONFIG_PCI_HCI), y)
+HCI_NAME = pci
 endif
 
-export KBUILD_CHECKSRC
 
-# Enable "clippy" (a linter) as part of the Rust compilation.
-#
-# Use 'make CLIPPY=1' to enable it.
-ifeq ("$(origin CLIPPY)", "command line")
-  KBUILD_CLIPPY := $(CLIPPY)
+_OS_INTFS_FILES :=	os_dep/osdep_service.o \
+			os_dep/linux/os_intfs.o \
+			os_dep/linux/$(HCI_NAME)_intf.o \
+			os_dep/linux/$(HCI_NAME)_ops_linux.o \
+			os_dep/linux/ioctl_linux.o \
+			os_dep/linux/xmit_linux.o \
+			os_dep/linux/mlme_linux.o \
+			os_dep/linux/recv_linux.o \
+			os_dep/linux/ioctl_cfg80211.o \
+			os_dep/linux/rtw_cfgvendor.o \
+			os_dep/linux/wifi_regd.o \
+			os_dep/linux/rtw_android.o \
+			os_dep/linux/rtw_proc.o \
+			os_dep/linux/rtw_rhashtable.o
+
+ifeq ($(CONFIG_MP_INCLUDED), y)
+_OS_INTFS_FILES += os_dep/linux/ioctl_mp.o
 endif
 
-export KBUILD_CLIPPY
-
-# Use make M=dir or set the environment variable KBUILD_EXTMOD to specify the
-# directory of external module to build. Setting M= takes precedence.
-ifeq ("$(origin M)", "command line")
-  KBUILD_EXTMOD := $(M)
+ifeq ($(CONFIG_SDIO_HCI), y)
+_OS_INTFS_FILES += os_dep/linux/custom_gpio_linux.o
+_OS_INTFS_FILES += os_dep/linux/$(HCI_NAME)_ops_linux.o
 endif
 
-$(if $(word 2, $(KBUILD_EXTMOD)), \
-	$(error building multiple external modules is not supported))
-
-$(foreach x, % :, $(if $(findstring $x, $(KBUILD_EXTMOD)), \
-	$(error module directory path cannot contain '$x')))
-
-# Remove trailing slashes
-ifneq ($(filter %/, $(KBUILD_EXTMOD)),)
-KBUILD_EXTMOD := $(shell dirname $(KBUILD_EXTMOD).)
+ifeq ($(CONFIG_GSPI_HCI), y)
+_OS_INTFS_FILES += os_dep/linux/custom_gpio_linux.o
+_OS_INTFS_FILES += os_dep/linux/$(HCI_NAME)_ops_linux.o
 endif
 
-export KBUILD_EXTMOD
 
-# backward compatibility
-KBUILD_EXTRA_WARN ?= $(KBUILD_ENABLE_EXTRA_GCC_CHECKS)
+_HAL_INTFS_FILES :=	hal/hal_intf.o \
+			hal/hal_com.o \
+			hal/hal_com_phycfg.o \
+			hal/hal_phy.o \
+			hal/hal_dm.o \
+			hal/hal_dm_acs.o \
+			hal/hal_btcoex_wifionly.o \
+			hal/hal_btcoex.o \
+			hal/hal_mp.o \
+			hal/hal_mcc.o \
+			hal/hal_hci/hal_$(HCI_NAME).o \
+			hal/led/hal_led.o \
+			hal/led/hal_$(HCI_NAME)_led.o
 
-ifeq ("$(origin W)", "command line")
-  KBUILD_EXTRA_WARN := $(W)
+
+ccflags-y += -I$(src)/platform
+_PLATFORM_FILES := platform/platform_ops.o
+
+ccflags-y += -I$(src)/hal/btc
+
+########### HAL_RTL8188E #################################
+ifeq ($(CONFIG_RTL8188E), y)
+
+RTL871X = rtl8188e
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8189es
 endif
 
-export KBUILD_EXTRA_WARN
-
-# Kbuild will save output files in the current working directory.
-# This does not need to match to the root of the kernel source tree.
-#
-# For example, you can do this:
-#
-#  cd /dir/to/store/output/files; make -f /dir/to/kernel/source/Makefile
-#
-# If you want to save output files in a different location, there are
-# two syntaxes to specify it.
-#
-# 1) O=
-# Use "make O=dir/to/store/output/files/"
-#
-# 2) Set KBUILD_OUTPUT
-# Set the environment variable KBUILD_OUTPUT to point to the output directory.
-# export KBUILD_OUTPUT=dir/to/store/output/files/; make
-#
-# The O= assignment takes precedence over the KBUILD_OUTPUT environment
-# variable.
-
-# Do we want to change the working directory?
-ifeq ("$(origin O)", "command line")
-  KBUILD_OUTPUT := $(O)
+ifeq ($(CONFIG_GSPI_HCI), y)
+MODULE_NAME = 8189es
 endif
 
-ifneq ($(KBUILD_OUTPUT),)
-# $(realpath ...) gets empty if the path does not exist. Run 'mkdir -p' first.
-$(shell mkdir -p "$(KBUILD_OUTPUT)")
-# $(realpath ...) resolves symlinks
-abs_objtree := $(realpath $(KBUILD_OUTPUT))
-$(if $(abs_objtree),,$(error failed to create output directory "$(KBUILD_OUTPUT)"))
-endif # ifneq ($(KBUILD_OUTPUT),)
-
-ifneq ($(words $(subst :, ,$(abs_srctree))), 1)
-$(error source directory cannot contain spaces or colons)
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8188eu
 endif
 
-export sub_make_done := 1
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8188ee
+endif
+ccflags-y += -DCONFIG_RTL8188E
 
-endif # sub_make_done
+_HAL_INTFS_FILES +=	hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8188EPwrSeq.o\
+ 					hal/$(RTL871X)/$(RTL871X)_xmit.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
-ifeq ($(abs_objtree),$(CURDIR))
-# Suppress "Entering directory ..." if we are at the final work directory.
-no-print-directory := --no-print-directory
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8188e_s_fw.o \
+			hal/$(RTL871X)/hal8188e_t_fw.o \
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-# Recursion to show "Entering directory ..."
-need-sub-make := 1
-endif
-
-ifeq ($(filter --no-print-directory, $(MAKEFLAGS)),)
-# If --no-print-directory is unset, recurse once again to set it.
-# You may end up recursing into __sub-make twice. This is needed due to the
-# behavior change in GNU Make 4.4.1.
-need-sub-make := 1
-endif
-
-ifeq ($(need-sub-make),1)
-
-PHONY += $(MAKECMDGOALS) __sub-make
-
-$(filter-out $(this-makefile), $(MAKECMDGOALS)) __all: __sub-make
-	@:
-
-# Invoke a second make in the output directory, passing relevant variables
-__sub-make:
-	$(Q)$(MAKE) $(no-print-directory) -C $(abs_objtree) \
-	-f $(abs_srctree)/Makefile $(MAKECMDGOALS)
-
-else # need-sub-make
-
-# We process the rest of the Makefile if this is the final invocation of make
-
-ifeq ($(abs_srctree),$(abs_objtree))
-        # building in the source tree
-        srctree := .
-	building_out_of_srctree :=
+ifeq ($(CONFIG_GSPI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-        ifeq ($(abs_srctree)/,$(dir $(abs_objtree)))
-                # building in a subdirectory of the source tree
-                srctree := ..
-        else
-                srctree := $(abs_srctree)
-        endif
-	building_out_of_srctree := 1
-endif
-
-ifneq ($(KBUILD_ABS_SRCTREE),)
-srctree := $(abs_srctree)
-endif
-
-objtree		:= .
-
-VPATH		:=
-
-ifeq ($(KBUILD_EXTMOD),)
-ifdef building_out_of_srctree
-VPATH		:= $(srctree)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
 endif
 endif
 
-export building_out_of_srctree srctree objtree VPATH
-
-# To make sure we do not include .config for any of the *config targets
-# catch them early, and hand them over to scripts/kconfig/Makefile
-# It is allowed to specify more targets when calling make, including
-# mixing *config targets and build targets.
-# For example 'make oldconfig all'.
-# Detect when mixed targets is specified, and make a second invocation
-# of make so .config is not included in this case either (for *config).
-
-version_h := include/generated/uapi/linux/version.h
-
-clean-targets := %clean mrproper cleandocs
-no-dot-config-targets := $(clean-targets) \
-			 cscope gtags TAGS tags help% %docs check% coccicheck \
-			 $(version_h) headers headers_% archheaders archscripts \
-			 %asm-generic kernelversion %src-pkg dt_binding_check \
-			 outputmakefile rustavailable rustfmt rustfmtcheck
-no-sync-config-targets := $(no-dot-config-targets) %install modules_sign kernelrelease \
-			  image_name
-single-targets := %.a %.i %.ko %.lds %.ll %.lst %.mod %.o %.rsi %.s %.symtypes %/
-
-config-build	:=
-mixed-build	:=
-need-config	:= 1
-may-sync-config	:= 1
-single-build	:=
-
-ifneq ($(filter $(no-dot-config-targets), $(MAKECMDGOALS)),)
-    ifeq ($(filter-out $(no-dot-config-targets), $(MAKECMDGOALS)),)
-        need-config :=
-    endif
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188E_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188E_PCIE.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188E_SDIO.o
 endif
 
-ifneq ($(filter $(no-sync-config-targets), $(MAKECMDGOALS)),)
-    ifeq ($(filter-out $(no-sync-config-targets), $(MAKECMDGOALS)),)
-        may-sync-config :=
-    endif
 endif
 
-need-compiler := $(may-sync-config)
+########### HAL_RTL8192E #################################
+ifeq ($(CONFIG_RTL8192E), y)
 
-ifneq ($(KBUILD_EXTMOD),)
-    may-sync-config :=
+RTL871X = rtl8192e
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8192es
 endif
 
-ifeq ($(KBUILD_EXTMOD),)
-    ifneq ($(filter %config,$(MAKECMDGOALS)),)
-        config-build := 1
-        ifneq ($(words $(MAKECMDGOALS)),1)
-            mixed-build := 1
-        endif
-    endif
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8192eu
 endif
 
-# We cannot build single targets and the others at the same time
-ifneq ($(filter $(single-targets), $(MAKECMDGOALS)),)
-    single-build := 1
-    ifneq ($(filter-out $(single-targets), $(MAKECMDGOALS)),)
-        mixed-build := 1
-    endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8192ee
 endif
+ccflags-y += -DCONFIG_RTL8192E
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8192EPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_xmit.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
-# For "make -j clean all", "make -j mrproper defconfig all", etc.
-ifneq ($(filter $(clean-targets),$(MAKECMDGOALS)),)
-    ifneq ($(filter-out $(clean-targets),$(MAKECMDGOALS)),)
-        mixed-build := 1
-    endif
-endif
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8192e_fw.o \
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
 
-# install and modules_install need also be processed one by one
-ifneq ($(filter install,$(MAKECMDGOALS)),)
-    ifneq ($(filter modules_install,$(MAKECMDGOALS)),)
-        mixed-build := 1
-    endif
-endif
-
-ifdef mixed-build
-# ===========================================================================
-# We're called with mixed targets (*config and build targets).
-# Handle them one by one.
-
-PHONY += $(MAKECMDGOALS) __build_one_by_one
-
-$(MAKECMDGOALS): __build_one_by_one
-	@:
-
-__build_one_by_one:
-	$(Q)set -e; \
-	for i in $(MAKECMDGOALS); do \
-		$(MAKE) -f $(srctree)/Makefile $$i; \
-	done
-
-else # !mixed-build
-
-include $(srctree)/scripts/Kbuild.include
-
-# Read KERNELRELEASE from include/config/kernel.release (if it exists)
-KERNELRELEASE = $(call read-file, include/config/kernel.release)
-KERNELVERSION = $(VERSION)$(if $(PATCHLEVEL),.$(PATCHLEVEL)$(if $(SUBLEVEL),.$(SUBLEVEL)))$(EXTRAVERSION)
-export VERSION PATCHLEVEL SUBLEVEL KERNELRELEASE KERNELVERSION
-
-include $(srctree)/scripts/subarch.include
-
-# Cross compiling and selecting different set of gcc/bin-utils
-# ---------------------------------------------------------------------------
-#
-# When performing cross compilation for other architectures ARCH shall be set
-# to the target architecture. (See arch/* for the possibilities).
-# ARCH can be set during invocation of make:
-# make ARCH=arm64
-# Another way is to have ARCH set in the environment.
-# The default ARCH is the host where make is executed.
-
-# CROSS_COMPILE specify the prefix used for all executables used
-# during compilation. Only gcc and related bin-utils executables
-# are prefixed with $(CROSS_COMPILE).
-# CROSS_COMPILE can be set on the command line
-# make CROSS_COMPILE=aarch64-linux-gnu-
-# Alternatively CROSS_COMPILE can be set in the environment.
-# Default value for CROSS_COMPILE is not to prefix executables
-# Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
-ARCH		?= $(SUBARCH)
-
-# Architecture as present in compile.h
-UTS_MACHINE 	:= $(ARCH)
-SRCARCH 	:= $(ARCH)
-
-# Additional ARCH settings for x86
-ifeq ($(ARCH),i386)
-        SRCARCH := x86
-endif
-ifeq ($(ARCH),x86_64)
-        SRCARCH := x86
-endif
-
-# Additional ARCH settings for sparc
-ifeq ($(ARCH),sparc32)
-       SRCARCH := sparc
-endif
-ifeq ($(ARCH),sparc64)
-       SRCARCH := sparc
-endif
-
-# Additional ARCH settings for parisc
-ifeq ($(ARCH),parisc64)
-       SRCARCH := parisc
-endif
-
-export cross_compiling :=
-ifneq ($(SRCARCH),$(SUBARCH))
-cross_compiling := 1
-endif
-
-KCONFIG_CONFIG	?= .config
-export KCONFIG_CONFIG
-
-# SHELL used by kbuild
-CONFIG_SHELL := sh
-
-HOST_LFS_CFLAGS := $(shell getconf LFS_CFLAGS 2>/dev/null)
-HOST_LFS_LDFLAGS := $(shell getconf LFS_LDFLAGS 2>/dev/null)
-HOST_LFS_LIBS := $(shell getconf LFS_LIBS 2>/dev/null)
-
-ifneq ($(LLVM),)
-ifneq ($(filter %/,$(LLVM)),)
-LLVM_PREFIX := $(LLVM)
-else ifneq ($(filter -%,$(LLVM)),)
-LLVM_SUFFIX := $(LLVM)
-endif
-
-HOSTCC	= $(LLVM_PREFIX)clang$(LLVM_SUFFIX)
-HOSTCXX	= $(LLVM_PREFIX)clang++$(LLVM_SUFFIX)
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-HOSTCC	= gcc
-HOSTCXX	= g++
-endif
-HOSTRUSTC = rustc
-HOSTPKG_CONFIG	= pkg-config
-
-KBUILD_USERHOSTCFLAGS := -Wall -Wmissing-prototypes -Wstrict-prototypes \
-			 -O2 -fomit-frame-pointer -std=gnu11
-KBUILD_USERCFLAGS  := $(KBUILD_USERHOSTCFLAGS) $(USERCFLAGS)
-KBUILD_USERLDFLAGS := $(USERLDFLAGS)
-
-# These flags apply to all Rust code in the tree, including the kernel and
-# host programs.
-export rust_common_flags := --edition=2021 \
-			    -Zbinary_dep_depinfo=y \
-			    -Astable_features \
-			    -Dnon_ascii_idents \
-			    -Dunsafe_op_in_unsafe_fn \
-			    -Wmissing_docs \
-			    -Wrust_2018_idioms \
-			    -Wunreachable_pub \
-			    -Wclippy::all \
-			    -Wclippy::ignored_unit_patterns \
-			    -Wclippy::mut_mut \
-			    -Wclippy::needless_bitwise_bool \
-			    -Aclippy::needless_lifetimes \
-			    -Wclippy::no_mangle_with_rust_abi \
-			    -Wclippy::undocumented_unsafe_blocks \
-			    -Wclippy::unnecessary_safety_comment \
-			    -Wclippy::unnecessary_safety_doc \
-			    -Wrustdoc::missing_crate_level_docs \
-			    -Wrustdoc::unescaped_backticks
-
-KBUILD_HOSTCFLAGS   := $(KBUILD_USERHOSTCFLAGS) $(HOST_LFS_CFLAGS) \
-		       $(HOSTCFLAGS) -I $(srctree)/scripts/include
-KBUILD_HOSTCXXFLAGS := -Wall -O2 $(HOST_LFS_CFLAGS) $(HOSTCXXFLAGS) \
-		       -I $(srctree)/scripts/include
-KBUILD_HOSTRUSTFLAGS := $(rust_common_flags) -O -Cstrip=debuginfo \
-			-Zallow-features= $(HOSTRUSTFLAGS)
-KBUILD_HOSTLDFLAGS  := $(HOST_LFS_LDFLAGS) $(HOSTLDFLAGS)
-KBUILD_HOSTLDLIBS   := $(HOST_LFS_LIBS) $(HOSTLDLIBS)
-
-# Make variables (CC, etc...)
-CPP		= $(CC) -E
-ifneq ($(LLVM),)
-CC		= $(LLVM_PREFIX)clang$(LLVM_SUFFIX)
-LD		= $(LLVM_PREFIX)ld.lld$(LLVM_SUFFIX)
-AR		= $(LLVM_PREFIX)llvm-ar$(LLVM_SUFFIX)
-NM		= $(LLVM_PREFIX)llvm-nm$(LLVM_SUFFIX)
-OBJCOPY		= $(LLVM_PREFIX)llvm-objcopy$(LLVM_SUFFIX)
-OBJDUMP		= $(LLVM_PREFIX)llvm-objdump$(LLVM_SUFFIX)
-READELF		= $(LLVM_PREFIX)llvm-readelf$(LLVM_SUFFIX)
-STRIP		= $(LLVM_PREFIX)llvm-strip$(LLVM_SUFFIX)
+ifeq ($(CONFIG_GSPI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-CC		= $(CROSS_COMPILE)gcc
-LD		= $(CROSS_COMPILE)ld
-AR		= $(CROSS_COMPILE)ar
-NM		= $(CROSS_COMPILE)nm
-OBJCOPY		= $(CROSS_COMPILE)objcopy
-OBJDUMP		= $(CROSS_COMPILE)objdump
-READELF		= $(CROSS_COMPILE)readelf
-STRIP		= $(CROSS_COMPILE)strip
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
 endif
-RUSTC		= rustc
-RUSTDOC		= rustdoc
-RUSTFMT		= rustfmt
-CLIPPY_DRIVER	= clippy-driver
-BINDGEN		= bindgen
-PAHOLE		= pahole
-RESOLVE_BTFIDS	= $(objtree)/tools/bpf/resolve_btfids/resolve_btfids
-LEX		= flex
-YACC		= bison
-AWK		= awk
-INSTALLKERNEL  := installkernel
-PERL		= perl
-PYTHON3		= python3
-CHECK		= sparse
-BASH		= bash
-KGZIP		= gzip
-KBZIP2		= bzip2
-KLZOP		= lzop
-LZMA		= lzma
-LZ4		= lz4
-XZ		= xz
-ZSTD		= zstd
+endif
 
-CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
-		  -Wbitwise -Wno-return-void -Wno-unknown-attribute $(CF)
-NOSTDINC_FLAGS :=
-CFLAGS_MODULE   =
-RUSTFLAGS_MODULE =
-AFLAGS_MODULE   =
-LDFLAGS_MODULE  =
-CFLAGS_KERNEL	=
-RUSTFLAGS_KERNEL =
-AFLAGS_KERNEL	=
-LDFLAGS_vmlinux =
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8192E_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8192E_PCIE.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8192E_SDIO.o
+endif
 
-# Use USERINCLUDE when you must reference the UAPI directories only.
-USERINCLUDE    := \
-		-I$(srctree)/arch/$(SRCARCH)/include/uapi \
-		-I$(objtree)/arch/$(SRCARCH)/include/generated/uapi \
-		-I$(srctree)/include/uapi \
-		-I$(objtree)/include/generated/uapi \
-                -include $(srctree)/include/linux/compiler-version.h \
-                -include $(srctree)/include/linux/kconfig.h
+ifeq ($(CONFIG_BT_COEXIST), y)
+_BTC_FILES += hal/btc/halbtc8192e1ant.o \
+				hal/btc/halbtc8192e2ant.o
+endif
 
-# Use LINUXINCLUDE when you must reference the include/ directory.
-# Needed to be compatible with the O= option
-LINUXINCLUDE    := \
-		-I$(srctree)/arch/$(SRCARCH)/include \
-		-I$(objtree)/arch/$(SRCARCH)/include/generated \
-		$(if $(building_out_of_srctree),-I$(srctree)/include) \
-		-I$(objtree)/include \
-		$(USERINCLUDE)
+endif
 
-KBUILD_AFLAGS   := -D__ASSEMBLY__ -fno-PIE
+########### HAL_RTL8812A_RTL8821A #################################
 
-KBUILD_CFLAGS :=
-KBUILD_CFLAGS += -std=gnu11
-KBUILD_CFLAGS += -fshort-wchar
-KBUILD_CFLAGS += -funsigned-char
-KBUILD_CFLAGS += -fno-common
-KBUILD_CFLAGS += -fno-PIE
-KBUILD_CFLAGS += -fno-strict-aliasing
+ifneq ($(CONFIG_RTL8812A)_$(CONFIG_RTL8821A), n_n)
 
-KBUILD_CPPFLAGS := -D__KERNEL__
-KBUILD_RUSTFLAGS := $(rust_common_flags) \
-		    -Cpanic=abort -Cembed-bitcode=n -Clto=n \
-		    -Cforce-unwind-tables=n -Ccodegen-units=1 \
-		    -Csymbol-mangling-version=v0 \
-		    -Crelocation-model=static \
-		    -Zfunction-sections=n \
-		    -Wclippy::float_arithmetic
+RTL871X = rtl8812a
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8812au
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8812ae
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8812as
+endif
 
-KBUILD_AFLAGS_KERNEL :=
-KBUILD_CFLAGS_KERNEL :=
-KBUILD_RUSTFLAGS_KERNEL :=
-KBUILD_AFLAGS_MODULE  := -DMODULE
-KBUILD_CFLAGS_MODULE  := -DMODULE
-KBUILD_RUSTFLAGS_MODULE := --cfg MODULE
-KBUILD_LDFLAGS_MODULE :=
-KBUILD_LDFLAGS :=
-CLANG_FLAGS :=
+_HAL_INTFS_FILES +=  hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8812PwrSeq.o \
+					hal/$(RTL871X)/Hal8821APwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_xmit.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
-ifeq ($(KBUILD_CLIPPY),1)
-	RUSTC_OR_CLIPPY_QUIET := CLIPPY
-	RUSTC_OR_CLIPPY = $(CLIPPY_DRIVER)
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-	RUSTC_OR_CLIPPY_QUIET := RUSTC
-	RUSTC_OR_CLIPPY = $(RUSTC)
-endif
-
-# Allows the usage of unstable features in stable compilers.
-export RUSTC_BOOTSTRAP := 1
-
-# Allows finding `.clippy.toml` in out-of-srctree builds.
-export CLIPPY_CONF_DIR := $(srctree)
-
-export ARCH SRCARCH CONFIG_SHELL BASH HOSTCC KBUILD_HOSTCFLAGS CROSS_COMPILE LD CC HOSTPKG_CONFIG
-export RUSTC RUSTDOC RUSTFMT RUSTC_OR_CLIPPY_QUIET RUSTC_OR_CLIPPY BINDGEN
-export HOSTRUSTC KBUILD_HOSTRUSTFLAGS
-export CPP AR NM STRIP OBJCOPY OBJDUMP READELF PAHOLE RESOLVE_BTFIDS LEX YACC AWK INSTALLKERNEL
-export PERL PYTHON3 CHECK CHECKFLAGS MAKE UTS_MACHINE HOSTCXX
-export KGZIP KBZIP2 KLZOP LZMA LZ4 XZ ZSTD
-export KBUILD_HOSTCXXFLAGS KBUILD_HOSTLDFLAGS KBUILD_HOSTLDLIBS LDFLAGS_MODULE
-export KBUILD_USERCFLAGS KBUILD_USERLDFLAGS
-
-export KBUILD_CPPFLAGS NOSTDINC_FLAGS LINUXINCLUDE OBJCOPYFLAGS KBUILD_LDFLAGS
-export KBUILD_CFLAGS CFLAGS_KERNEL CFLAGS_MODULE
-export KBUILD_RUSTFLAGS RUSTFLAGS_KERNEL RUSTFLAGS_MODULE
-export KBUILD_AFLAGS AFLAGS_KERNEL AFLAGS_MODULE
-export KBUILD_AFLAGS_MODULE KBUILD_CFLAGS_MODULE KBUILD_RUSTFLAGS_MODULE KBUILD_LDFLAGS_MODULE
-export KBUILD_AFLAGS_KERNEL KBUILD_CFLAGS_KERNEL KBUILD_RUSTFLAGS_KERNEL
-
-# Files to ignore in find ... statements
-
-export RCS_FIND_IGNORE := \( -name SCCS -o -name BitKeeper -o -name .svn -o    \
-			  -name CVS -o -name .pc -o -name .hg -o -name .git \) \
-			  -prune -o
-
-# ===========================================================================
-# Rules shared between *config targets and build targets
-
-# Basic helpers built in scripts/basic/
-PHONY += scripts_basic
-scripts_basic:
-	$(Q)$(MAKE) $(build)=scripts/basic
-
-PHONY += outputmakefile
-ifdef building_out_of_srctree
-# Before starting out-of-tree build, make sure the source tree is clean.
-# outputmakefile generates a Makefile in the output directory, if using a
-# separate output directory. This allows convenient use of make in the
-# output directory.
-# At the same time when output Makefile generated, generate .gitignore to
-# ignore whole output directory
-
-quiet_cmd_makefile = GEN     Makefile
-      cmd_makefile = { \
-	echo "\# Automatically generated by $(srctree)/Makefile: don't edit"; \
-	echo "include $(srctree)/Makefile"; \
-	} > Makefile
-
-outputmakefile:
-	@if [ -f $(srctree)/.config -o \
-		 -d $(srctree)/include/config -o \
-		 -d $(srctree)/arch/$(SRCARCH)/include/generated ]; then \
-		echo >&2 "***"; \
-		echo >&2 "*** The source tree is not clean, please run 'make$(if $(findstring command line, $(origin ARCH)), ARCH=$(ARCH)) mrproper'"; \
-		echo >&2 "*** in $(abs_srctree)";\
-		echo >&2 "***"; \
-		false; \
-	fi
-	$(Q)ln -fsn $(srctree) source
-	$(call cmd,makefile)
-	$(Q)test -e .gitignore || \
-	{ echo "# this is build directory, ignore it"; echo "*"; } > .gitignore
-endif
-
-# The expansion should be delayed until arch/$(SRCARCH)/Makefile is included.
-# Some architectures define CROSS_COMPILE in arch/$(SRCARCH)/Makefile.
-# CC_VERSION_TEXT and RUSTC_VERSION_TEXT are referenced from Kconfig (so they
-# need export), and from include/config/auto.conf.cmd to detect the compiler
-# upgrade.
-CC_VERSION_TEXT = $(subst $(pound),,$(shell LC_ALL=C $(CC) --version 2>/dev/null | head -n 1))
-RUSTC_VERSION_TEXT = $(subst $(pound),,$(shell $(RUSTC) --version 2>/dev/null))
-
-ifneq ($(findstring clang,$(CC_VERSION_TEXT)),)
-include $(srctree)/scripts/Makefile.clang
-endif
-
-# Include this also for config targets because some architectures need
-# cc-cross-prefix to determine CROSS_COMPILE.
-ifdef need-compiler
-include $(srctree)/scripts/Makefile.compiler
-endif
-
-ifdef config-build
-# ===========================================================================
-# *config targets only - make sure prerequisites are updated, and descend
-# in scripts/kconfig to make the *config target
-
-# Read arch-specific Makefile to set KBUILD_DEFCONFIG as needed.
-# KBUILD_DEFCONFIG may point out an alternative default configuration
-# used for 'make defconfig'
-include $(srctree)/arch/$(SRCARCH)/Makefile
-export KBUILD_DEFCONFIG KBUILD_KCONFIG CC_VERSION_TEXT RUSTC_VERSION_TEXT
-
-config: outputmakefile scripts_basic FORCE
-	$(Q)$(MAKE) $(build)=scripts/kconfig $@
-
-%config: outputmakefile scripts_basic FORCE
-	$(Q)$(MAKE) $(build)=scripts/kconfig $@
-
-else #!config-build
-# ===========================================================================
-# Build targets only - this includes vmlinux, arch-specific targets, clean
-# targets and others. In general all targets except *config targets.
-
-# If building an external module we do not care about the all: rule
-# but instead __all depend on modules
-PHONY += all
-ifeq ($(KBUILD_EXTMOD),)
-__all: all
+ifeq ($(CONFIG_GSPI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-__all: modules
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
+endif
 endif
 
-targets :=
-
-# Decide whether to build built-in, modular, or both.
-# Normally, just do built-in.
-
-KBUILD_MODULES :=
-KBUILD_BUILTIN := 1
-
-# If we have only "make modules", don't compile built-in objects.
-ifeq ($(MAKECMDGOALS),modules)
-  KBUILD_BUILTIN :=
+ifeq ($(CONFIG_RTL8812A), y)
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8812A_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8812A_PCIE.o
+endif
+endif
+ifeq ($(CONFIG_RTL8821A), y)
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8821A_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8821A_PCIE.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8821A_SDIO.o
+endif
 endif
 
-# If we have "make <whatever> modules", compile modules
-# in addition to whatever we do anyway.
-# Just "make" or "make all" shall build modules as well
-
-ifneq ($(filter all modules nsdeps %compile_commands.json clang-%,$(MAKECMDGOALS)),)
-  KBUILD_MODULES := 1
+ifeq ($(CONFIG_RTL8812A), y)
+ccflags-y += -DCONFIG_RTL8812A
+_HAL_INTFS_FILES +=	hal/rtl8812a/hal8812a_fw.o
 endif
 
-ifeq ($(MAKECMDGOALS),)
-  KBUILD_MODULES := 1
-endif
+ifeq ($(CONFIG_RTL8821A), y)
 
-export KBUILD_MODULES KBUILD_BUILTIN
+ifeq ($(CONFIG_RTL8812A), n)
 
-ifdef need-config
-include include/config/auto.conf
-endif
-
-ifeq ($(KBUILD_EXTMOD),)
-# Objects we will link into vmlinux / subdirs we need to visit
-core-y		:=
-drivers-y	:=
-libs-y		:= lib/
-endif # KBUILD_EXTMOD
-
-# The all: target is the default when no target is given on the
-# command line.
-# This allow a user to issue only 'make' to build a kernel including modules
-# Defaults to vmlinux, but the arch makefile usually adds further targets
-all: vmlinux
-
-CFLAGS_GCOV	:= -fprofile-arcs -ftest-coverage
-ifdef CONFIG_CC_IS_GCC
-CFLAGS_GCOV	+= -fno-tree-loop-im
-endif
-export CFLAGS_GCOV
-
-# The arch Makefiles can override CC_FLAGS_FTRACE. We may also append it later.
-ifdef CONFIG_FUNCTION_TRACER
-  CC_FLAGS_FTRACE := -pg
-endif
-
-include $(srctree)/arch/$(SRCARCH)/Makefile
-
-ifdef need-config
-ifdef may-sync-config
-# Read in dependencies to all Kconfig* files, make sure to run syncconfig if
-# changes are detected. This should be included after arch/$(SRCARCH)/Makefile
-# because some architectures define CROSS_COMPILE there.
-include include/config/auto.conf.cmd
-
-$(KCONFIG_CONFIG):
-	@echo >&2 '***'
-	@echo >&2 '*** Configuration file "$@" not found!'
-	@echo >&2 '***'
-	@echo >&2 '*** Please run some configurator (e.g. "make oldconfig" or'
-	@echo >&2 '*** "make menuconfig" or "make xconfig").'
-	@echo >&2 '***'
-	@/bin/false
-
-# The actual configuration files used during the build are stored in
-# include/generated/ and include/config/. Update them if .config is newer than
-# include/config/auto.conf (which mirrors .config).
-#
-# This exploits the 'multi-target pattern rule' trick.
-# The syncconfig should be executed only once to make all the targets.
-# (Note: use the grouped target '&:' when we bump to GNU Make 4.3)
-#
-# Do not use $(call cmd,...) here. That would suppress prompts from syncconfig,
-# so you cannot notice that Kconfig is waiting for the user input.
-%/config/auto.conf %/config/auto.conf.cmd %/generated/autoconf.h %/generated/rustc_cfg: $(KCONFIG_CONFIG)
-	$(Q)$(kecho) "  SYNC    $@"
-	$(Q)$(MAKE) -f $(srctree)/Makefile syncconfig
-else # !may-sync-config
-# External modules and some install targets need include/generated/autoconf.h
-# and include/config/auto.conf but do not care if they are up-to-date.
-# Use auto.conf to trigger the test
-PHONY += include/config/auto.conf
-
-include/config/auto.conf:
-	@test -e include/generated/autoconf.h -a -e $@ || (		\
-	echo >&2;							\
-	echo >&2 "  ERROR: Kernel configuration is invalid.";		\
-	echo >&2 "         include/generated/autoconf.h or $@ are missing.";\
-	echo >&2 "         Run 'make oldconfig && make prepare' on kernel src to fix it.";	\
-	echo >&2 ;							\
-	/bin/false)
-
-endif # may-sync-config
-endif # need-config
-
-KBUILD_CFLAGS	+= -fno-delete-null-pointer-checks
-
-ifdef CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE
-KBUILD_CFLAGS += -O2
-KBUILD_RUSTFLAGS += -Copt-level=2
-else ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-KBUILD_CFLAGS += -Os
-KBUILD_RUSTFLAGS += -Copt-level=s
-endif
-
-# Always set `debug-assertions` and `overflow-checks` because their default
-# depends on `opt-level` and `debug-assertions`, respectively.
-KBUILD_RUSTFLAGS += -Cdebug-assertions=$(if $(CONFIG_RUST_DEBUG_ASSERTIONS),y,n)
-KBUILD_RUSTFLAGS += -Coverflow-checks=$(if $(CONFIG_RUST_OVERFLOW_CHECKS),y,n)
-
-# Tell gcc to never replace conditional load with a non-conditional one
-ifdef CONFIG_CC_IS_GCC
-# gcc-10 renamed --param=allow-store-data-races=0 to
-# -fno-allow-store-data-races.
-KBUILD_CFLAGS	+= $(call cc-option,--param=allow-store-data-races=0)
-KBUILD_CFLAGS	+= $(call cc-option,-fno-allow-store-data-races)
-endif
-
-ifdef CONFIG_READABLE_ASM
-# Disable optimizations that make assembler listings hard to read.
-# reorder blocks reorders the control in the function
-# ipa clone creates specialized cloned functions
-# partial inlining inlines only parts of functions
-KBUILD_CFLAGS += -fno-reorder-blocks -fno-ipa-cp-clone -fno-partial-inlining
-endif
-
-stackp-flags-y                                    := -fno-stack-protector
-stackp-flags-$(CONFIG_STACKPROTECTOR)             := -fstack-protector
-stackp-flags-$(CONFIG_STACKPROTECTOR_STRONG)      := -fstack-protector-strong
-
-KBUILD_CFLAGS += $(stackp-flags-y)
-
-KBUILD_RUSTFLAGS-$(CONFIG_WERROR) += -Dwarnings
-KBUILD_RUSTFLAGS += $(KBUILD_RUSTFLAGS-y)
-
-ifdef CONFIG_FRAME_POINTER
-KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-KBUILD_RUSTFLAGS += -Cforce-frame-pointers=y
+RTL871X = rtl8821a
+ifeq ($(CONFIG_USB_HCI), y)
+ifeq ($(CONFIG_BT_COEXIST), y)
+MODULE_NAME := 8821au
 else
-# Some targets (ARM with Thumb2, for example), can't be built with frame
-# pointers.  For those, we don't have FUNCTION_TRACER automatically
-# select FRAME_POINTER.  However, FUNCTION_TRACER adds -pg, and this is
-# incompatible with -fomit-frame-pointer with current GCC, so we don't use
-# -fomit-frame-pointer with FUNCTION_TRACER.
-# In the Rust target specification, "frame-pointer" is set explicitly
-# to "may-omit".
-ifndef CONFIG_FUNCTION_TRACER
-KBUILD_CFLAGS	+= -fomit-frame-pointer
+MODULE_NAME := 8811au
+endif
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME := 8821ae
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME := 8821as
+endif
+
+endif
+
+ccflags-y += -DCONFIG_RTL8821A
+
+_HAL_INTFS_FILES +=	hal/rtl8812a/hal8821a_fw.o
+		
+endif
+
+ifeq ($(CONFIG_BT_COEXIST), y)
+ifeq ($(CONFIG_RTL8812A), y)
+_BTC_FILES += hal/btc/halbtc8812a1ant.o \
+				hal/btc/halbtc8812a2ant.o
+endif
+ifeq ($(CONFIG_RTL8821A), y)
+_BTC_FILES += hal/btc/halbtc8821a1ant.o \
+				hal/btc/halbtc8821a2ant.o
 endif
 endif
 
-# Initialize all stack variables with a 0xAA pattern.
-ifdef CONFIG_INIT_STACK_ALL_PATTERN
-KBUILD_CFLAGS	+= -ftrivial-auto-var-init=pattern
 endif
 
-# Initialize all stack variables with a zero value.
-ifdef CONFIG_INIT_STACK_ALL_ZERO
-KBUILD_CFLAGS	+= -ftrivial-auto-var-init=zero
-ifdef CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_ENABLER
-# https://github.com/llvm/llvm-project/issues/44842
-CC_AUTO_VAR_INIT_ZERO_ENABLER := -enable-trivial-auto-var-init-zero-knowing-it-will-be-removed-from-clang
-export CC_AUTO_VAR_INIT_ZERO_ENABLER
-KBUILD_CFLAGS	+= $(CC_AUTO_VAR_INIT_ZERO_ENABLER)
+########### HAL_RTL8723B #################################
+ifeq ($(CONFIG_RTL8723B), y)
+
+RTL871X = rtl8723b
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8723bu
 endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8723be
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8723bs
 endif
 
-# While VLAs have been removed, GCC produces unreachable stack probes
-# for the randomize_kstack_offset feature. Disable it for all compilers.
-KBUILD_CFLAGS	+= $(call cc-option, -fno-stack-clash-protection)
+ccflags-y += -DCONFIG_RTL8723B
 
-# Clear used registers at func exit (to reduce data lifetime and ROP gadgets).
-ifdef CONFIG_ZERO_CALL_USED_REGS
-KBUILD_CFLAGS	+= -fzero-call-used-regs=used-gpr
-endif
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8723BPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
-ifdef CONFIG_FUNCTION_TRACER
-ifdef CONFIG_FTRACE_MCOUNT_USE_CC
-  CC_FLAGS_FTRACE	+= -mrecord-mcount
-  ifdef CONFIG_HAVE_NOP_MCOUNT
-    ifeq ($(call cc-option-yn, -mnop-mcount),y)
-      CC_FLAGS_FTRACE	+= -mnop-mcount
-      CC_FLAGS_USING	+= -DCC_USING_NOP_MCOUNT
-    endif
-  endif
-endif
-ifdef CONFIG_FTRACE_MCOUNT_USE_OBJTOOL
-  ifdef CONFIG_HAVE_OBJTOOL_NOP_MCOUNT
-    CC_FLAGS_USING	+= -DCC_USING_NOP_MCOUNT
-  endif
-endif
-ifdef CONFIG_FTRACE_MCOUNT_USE_RECORDMCOUNT
-  ifdef CONFIG_HAVE_C_RECORDMCOUNT
-    BUILD_C_RECORDMCOUNT := y
-    export BUILD_C_RECORDMCOUNT
-  endif
-endif
-ifdef CONFIG_HAVE_FENTRY
-  # s390-linux-gnu-gcc did not support -mfentry until gcc-9.
-  ifeq ($(call cc-option-yn, -mfentry),y)
-    CC_FLAGS_FTRACE	+= -mfentry
-    CC_FLAGS_USING	+= -DCC_USING_FENTRY
-  endif
-endif
-export CC_FLAGS_FTRACE
-KBUILD_CFLAGS	+= $(CC_FLAGS_FTRACE) $(CC_FLAGS_USING)
-KBUILD_AFLAGS	+= $(CC_FLAGS_USING)
-endif
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8723b_fw.o
 
-# We trigger additional mismatches with less inlining
-ifdef CONFIG_DEBUG_SECTION_MISMATCH
-KBUILD_CFLAGS += -fno-inline-functions-called-once
-endif
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
 
-# `rustc`'s `-Zfunction-sections` applies to data too (as of 1.59.0).
-ifdef CONFIG_LD_DEAD_CODE_DATA_ELIMINATION
-KBUILD_CFLAGS_KERNEL += -ffunction-sections -fdata-sections
-KBUILD_RUSTFLAGS_KERNEL += -Zfunction-sections=y
-LDFLAGS_vmlinux += --gc-sections
-endif
-
-ifdef CONFIG_SHADOW_CALL_STACK
-ifndef CONFIG_DYNAMIC_SCS
-CC_FLAGS_SCS	:= -fsanitize=shadow-call-stack
-KBUILD_CFLAGS	+= $(CC_FLAGS_SCS)
-KBUILD_RUSTFLAGS += -Zsanitizer=shadow-call-stack
-endif
-export CC_FLAGS_SCS
-endif
-
-ifdef CONFIG_LTO_CLANG
-ifdef CONFIG_LTO_CLANG_THIN
-CC_FLAGS_LTO	:= -flto=thin -fsplit-lto-unit
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
 else
-CC_FLAGS_LTO	:= -flto
-endif
-CC_FLAGS_LTO	+= -fvisibility=hidden
-
-# Limit inlining across translation units to reduce binary size
-KBUILD_LDFLAGS += -mllvm -import-instr-limit=5
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 endif
 
-ifdef CONFIG_LTO
-KBUILD_CFLAGS	+= -fno-lto $(CC_FLAGS_LTO)
-KBUILD_AFLAGS	+= -fno-lto
-export CC_FLAGS_LTO
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8723B_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8723B_PCIE.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8723B_SDIO.o
 endif
 
-ifdef CONFIG_CFI_CLANG
-CC_FLAGS_CFI	:= -fsanitize=kcfi
-ifdef CONFIG_CFI_ICALL_NORMALIZE_INTEGERS
-	CC_FLAGS_CFI	+= -fsanitize-cfi-icall-experimental-normalize-integers
-endif
-ifdef CONFIG_RUST
-	# Always pass -Zsanitizer-cfi-normalize-integers as CONFIG_RUST selects
-	# CONFIG_CFI_ICALL_NORMALIZE_INTEGERS.
-	RUSTC_FLAGS_CFI   := -Zsanitizer=kcfi -Zsanitizer-cfi-normalize-integers
-	KBUILD_RUSTFLAGS += $(RUSTC_FLAGS_CFI)
-	export RUSTC_FLAGS_CFI
-endif
-KBUILD_CFLAGS	+= $(CC_FLAGS_CFI)
-export CC_FLAGS_CFI
+_BTC_FILES += hal/btc/halbtc8723bwifionly.o
+ifeq ($(CONFIG_BT_COEXIST), y)
+_BTC_FILES += hal/btc/halbtc8723b1ant.o \
+				hal/btc/halbtc8723b2ant.o
 endif
 
-# Architectures can define flags to add/remove for floating-point support
-CC_FLAGS_FPU	+= -D_LINUX_FPU_COMPILATION_UNIT
-export CC_FLAGS_FPU
-export CC_FLAGS_NO_FPU
+endif
 
-ifneq ($(CONFIG_FUNCTION_ALIGNMENT),0)
-# Set the minimal function alignment. Use the newer GCC option
-# -fmin-function-alignment if it is available, or fall back to -falign-funtions.
-# See also CONFIG_CC_HAS_SANE_FUNCTION_ALIGNMENT.
-ifdef CONFIG_CC_HAS_MIN_FUNCTION_ALIGNMENT
-KBUILD_CFLAGS += -fmin-function-alignment=$(CONFIG_FUNCTION_ALIGNMENT)
+########### HAL_RTL8814A #################################
+ifeq ($(CONFIG_RTL8814A), y)
+## ADD NEW VHT MP HW TX MODE ##
+#ccflags-y += -DCONFIG_MP_VHT_HW_TX_MODE
+#CONFIG_MP_VHT_HW_TX_MODE = y
+##########################################
+RTL871X = rtl8814a
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8814au
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8814ae
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8814as
+endif
+
+ccflags-y += -DCONFIG_RTL8814A
+
+_HAL_INTFS_FILES +=  hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8814PwrSeq.o \
+					hal/$(RTL871X)/$(RTL871X)_xmit.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
+
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8814a_fw.o
+
+
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-KBUILD_CFLAGS += -falign-functions=$(CONFIG_FUNCTION_ALIGNMENT)
-endif
-endif
-
-# arch Makefile may override CC so keep this after arch Makefile is included
-NOSTDINC_FLAGS += -nostdinc
-
-# To gain proper coverage for CONFIG_UBSAN_BOUNDS and CONFIG_FORTIFY_SOURCE,
-# the kernel uses only C99 flexible arrays for dynamically sized trailing
-# arrays. Enforce this for everything that may examine structure sizes and
-# perform bounds checking.
-KBUILD_CFLAGS += $(call cc-option, -fstrict-flex-arrays=3)
-
-# disable invalid "can't wrap" optimizations for signed / pointers
-KBUILD_CFLAGS	+= -fno-strict-overflow
-
-# Make sure -fstack-check isn't enabled (like gentoo apparently did)
-KBUILD_CFLAGS  += -fno-stack-check
-
-# conserve stack if available
-ifdef CONFIG_CC_IS_GCC
-KBUILD_CFLAGS   += -fconserve-stack
-endif
-
-# Ensure compilers do not transform certain loops into calls to wcslen()
-KBUILD_CFLAGS += -fno-builtin-wcslen
-
-# Ensure compilers do not transform certain loops into calls to wcslen()
-KBUILD_CFLAGS += -fno-builtin-wcslen
-
-# change __FILE__ to the relative path from the srctree
-KBUILD_CPPFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
-
-# include additional Makefiles when needed
-include-y			:= scripts/Makefile.extrawarn
-include-$(CONFIG_DEBUG_INFO)	+= scripts/Makefile.debug
-include-$(CONFIG_DEBUG_INFO_BTF)+= scripts/Makefile.btf
-include-$(CONFIG_KASAN)		+= scripts/Makefile.kasan
-include-$(CONFIG_KCSAN)		+= scripts/Makefile.kcsan
-include-$(CONFIG_KMSAN)		+= scripts/Makefile.kmsan
-include-$(CONFIG_UBSAN)		+= scripts/Makefile.ubsan
-include-$(CONFIG_KCOV)		+= scripts/Makefile.kcov
-include-$(CONFIG_RANDSTRUCT)	+= scripts/Makefile.randstruct
-include-$(CONFIG_GCC_PLUGINS)	+= scripts/Makefile.gcc-plugins
-
-include $(addprefix $(srctree)/, $(include-y))
-
-# scripts/Makefile.gcc-plugins is intentionally included last.
-# Do not add $(call cc-option,...) below this line. When you build the kernel
-# from the clean source tree, the GCC plugins do not exist at this point.
-
-# Add user supplied CPPFLAGS, AFLAGS, CFLAGS and RUSTFLAGS as the last assignments
-KBUILD_CPPFLAGS += $(KCPPFLAGS)
-KBUILD_AFLAGS   += $(KAFLAGS)
-KBUILD_CFLAGS   += $(KCFLAGS)
-KBUILD_RUSTFLAGS += $(KRUSTFLAGS)
-
-KBUILD_LDFLAGS_MODULE += --build-id=sha1
-LDFLAGS_vmlinux += --build-id=sha1
-
-KBUILD_LDFLAGS	+= -z noexecstack
-ifeq ($(CONFIG_LD_IS_BFD),y)
-KBUILD_LDFLAGS	+= $(call ld-option,--no-warn-rwx-segments)
-endif
-
-ifeq ($(CONFIG_STRIP_ASM_SYMS),y)
-LDFLAGS_vmlinux	+= -X
-endif
-
-ifeq ($(CONFIG_RELR),y)
-# ld.lld before 15 did not support -z pack-relative-relocs.
-LDFLAGS_vmlinux	+= $(call ld-option,--pack-dyn-relocs=relr,-z pack-relative-relocs)
-endif
-
-# We never want expected sections to be placed heuristically by the
-# linker. All sections should be explicitly named in the linker script.
-ifdef CONFIG_LD_ORPHAN_WARN
-LDFLAGS_vmlinux += --orphan-handling=$(CONFIG_LD_ORPHAN_WARN_LEVEL)
-endif
-
-# Align the bit size of userspace programs with the kernel
-KBUILD_USERCFLAGS  += $(filter -m32 -m64 --target=%, $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS))
-KBUILD_USERLDFLAGS += $(filter -m32 -m64 --target=%, $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS))
-
-# userspace programs are linked via the compiler, use the correct linker
-ifeq ($(CONFIG_CC_IS_CLANG)$(CONFIG_LD_IS_LLD),yy)
-KBUILD_USERLDFLAGS += --ld-path=$(LD)
-endif
-
-# make the checker run with the right architecture
-CHECKFLAGS += --arch=$(ARCH)
-
-# insure the checker run with the right endianness
-CHECKFLAGS += $(if $(CONFIG_CPU_BIG_ENDIAN),-mbig-endian,-mlittle-endian)
-
-# the checker needs the correct machine size
-CHECKFLAGS += $(if $(CONFIG_64BIT),-m64,-m32)
-
-# Default kernel image to build when no specific target is given.
-# KBUILD_IMAGE may be overruled on the command line or
-# set in the environment
-# Also any assignments in arch/$(ARCH)/Makefile take precedence over
-# this default value
-export KBUILD_IMAGE ?= vmlinux
-
-#
-# INSTALL_PATH specifies where to place the updated kernel and system map
-# images. Default is /boot, but you can set it to other values
-export	INSTALL_PATH ?= /boot
-
-#
-# INSTALL_DTBS_PATH specifies a prefix for relocations required by build roots.
-# Like INSTALL_MOD_PATH, it isn't defined in the Makefile, but can be passed as
-# an argument if needed. Otherwise it defaults to the kernel install path
-#
-export INSTALL_DTBS_PATH ?= $(INSTALL_PATH)/dtbs/$(KERNELRELEASE)
-
-#
-# INSTALL_MOD_PATH specifies a prefix to MODLIB for module directory
-# relocations required by build roots.  This is not defined in the
-# makefile but the argument can be passed to make if needed.
-#
-
-MODLIB	= $(INSTALL_MOD_PATH)/lib/modules/$(KERNELRELEASE)
-export MODLIB
-
-PHONY += prepare0
-
-export extmod_prefix = $(if $(KBUILD_EXTMOD),$(KBUILD_EXTMOD)/)
-export MODORDER := $(extmod_prefix)modules.order
-export MODULES_NSDEPS := $(extmod_prefix)modules.nsdeps
-
-ifeq ($(KBUILD_EXTMOD),)
-
-build-dir	:= .
-clean-dirs	:= $(sort . Documentation \
-		     $(patsubst %/,%,$(filter %/, $(core-) \
-			$(drivers-) $(libs-))))
-
-export ARCH_CORE	:= $(core-y)
-export ARCH_LIB		:= $(filter %/, $(libs-y))
-export ARCH_DRIVERS	:= $(drivers-y) $(drivers-m)
-# Externally visible symbols (used by link-vmlinux.sh)
-
-KBUILD_VMLINUX_OBJS := ./built-in.a
-ifdef CONFIG_MODULES
-KBUILD_VMLINUX_OBJS += $(patsubst %/, %/lib.a, $(filter %/, $(libs-y)))
-KBUILD_VMLINUX_LIBS := $(filter-out %/, $(libs-y))
+ifeq ($(CONFIG_GSPI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 else
-KBUILD_VMLINUX_LIBS := $(patsubst %/,%/lib.a, $(libs-y))
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
+endif
 endif
 
-export KBUILD_VMLINUX_LIBS
-export KBUILD_LDS          := arch/$(SRCARCH)/kernel/vmlinux.lds
-
-ifdef CONFIG_TRIM_UNUSED_KSYMS
-# For the kernel to actually contain only the needed exported symbols,
-# we have to build modules as well to determine what those symbols are.
-KBUILD_MODULES := 1
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8814A_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8814A_PCIE.o
 endif
 
-# '$(AR) mPi' needs 'T' to workaround the bug of llvm-ar <= 14
-quiet_cmd_ar_vmlinux.a = AR      $@
-      cmd_ar_vmlinux.a = \
-	rm -f $@; \
-	$(AR) cDPrST $@ $(KBUILD_VMLINUX_OBJS); \
-	$(AR) mPiT $$($(AR) t $@ | sed -n 1p) $@ $$($(AR) t $@ | grep -F -f $(srctree)/scripts/head-object-list.txt)
+ifeq ($(CONFIG_BT_COEXIST), y)
+_BTC_FILES += hal/btc/halbtc8814a2ant.o
+endif
+endif
 
-targets += vmlinux.a
-vmlinux.a: $(KBUILD_VMLINUX_OBJS) scripts/head-object-list.txt FORCE
-	$(call if_changed,ar_vmlinux.a)
+########### HAL_RTL8723C #################################
+ifeq ($(CONFIG_RTL8723C), y)
 
-PHONY += vmlinux_o
-vmlinux_o: vmlinux.a $(KBUILD_VMLINUX_LIBS)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.vmlinux_o
+RTL871X = rtl8703b
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8723cu
+MODULE_SUB_NAME = 8703bu
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8723ce
+MODULE_SUB_NAME = 8703be
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8723cs
+MODULE_SUB_NAME = 8703bs
+endif
 
-vmlinux.o modules.builtin.modinfo modules.builtin: vmlinux_o
-	@:
+ccflags-y += -DCONFIG_RTL8703B
 
-PHONY += vmlinux
-# LDFLAGS_vmlinux in the top Makefile defines linker flags for the top vmlinux,
-# not for decompressors. LDFLAGS_vmlinux in arch/*/boot/compressed/Makefile is
-# unrelated; the decompressors just happen to have the same base name,
-# arch/*/boot/compressed/vmlinux.
-# Export LDFLAGS_vmlinux only to scripts/Makefile.vmlinux.
-#
-# _LDFLAGS_vmlinux is a workaround for the 'private export' bug:
-#   https://savannah.gnu.org/bugs/?61463
-# For Make > 4.4, the following simple code will work:
-#  vmlinux: private export LDFLAGS_vmlinux := $(LDFLAGS_vmlinux)
-vmlinux: private _LDFLAGS_vmlinux := $(LDFLAGS_vmlinux)
-vmlinux: export LDFLAGS_vmlinux = $(_LDFLAGS_vmlinux)
-vmlinux: vmlinux.o $(KBUILD_LDS) modpost
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.vmlinux
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8703BPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
-# The actual objects are generated when descending,
-# make sure no implicit rule kicks in
-$(sort $(KBUILD_LDS) $(KBUILD_VMLINUX_OBJS) $(KBUILD_VMLINUX_LIBS)): . ;
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8703b_fw.o
 
-ifeq ($(origin KERNELRELEASE),file)
-filechk_kernel.release = $(srctree)/scripts/setlocalversion $(srctree)
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_recv.o
+
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
 else
-filechk_kernel.release = echo $(KERNELRELEASE)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
 endif
 
-# Store (new) KERNELRELEASE string in include/config/kernel.release
-include/config/kernel.release: FORCE
-	$(call filechk,kernel.release)
-
-# Additional helpers built in scripts/
-# Carefully list dependencies so we do not try to build scripts twice
-# in parallel
-PHONY += scripts
-scripts: scripts_basic scripts_dtc
-	$(Q)$(MAKE) $(build)=$(@)
-
-# Things we need to do before we recursively start building the kernel
-# or the modules are listed in "prepare".
-# A multi level approach is used. prepareN is processed before prepareN-1.
-# archprepare is used in arch Makefiles and when processed asm symlink,
-# version.h and scripts_basic is processed / created.
-
-PHONY += prepare archprepare
-
-archprepare: outputmakefile archheaders archscripts scripts include/config/kernel.release \
-	asm-generic $(version_h) include/generated/utsrelease.h \
-	include/generated/compile.h include/generated/autoconf.h remove-stale-files
-
-prepare0: archprepare
-	$(Q)$(MAKE) $(build)=scripts/mod
-	$(Q)$(MAKE) $(build)=. prepare
-
-# All the preparing..
-prepare: prepare0
-ifdef CONFIG_RUST
-	+$(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust_is_available.sh
-	$(Q)$(MAKE) $(build)=rust
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8703B_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8703B_PCIE.o
 endif
 
-PHONY += remove-stale-files
-remove-stale-files:
-	$(Q)$(srctree)/scripts/remove-stale-files
-
-# Support for using generic headers in asm-generic
-asm-generic := -f $(srctree)/scripts/Makefile.asm-headers obj
-
-PHONY += asm-generic uapi-asm-generic
-asm-generic: uapi-asm-generic
-	$(Q)$(MAKE) $(asm-generic)=arch/$(SRCARCH)/include/generated/asm \
-	generic=include/asm-generic
-uapi-asm-generic:
-	$(Q)$(MAKE) $(asm-generic)=arch/$(SRCARCH)/include/generated/uapi/asm \
-	generic=include/uapi/asm-generic
-
-# Generate some files
-# ---------------------------------------------------------------------------
-
-# KERNELRELEASE can change from a few different places, meaning version.h
-# needs to be updated, so this check is forced on all builds
-
-uts_len := 64
-define filechk_utsrelease.h
-	if [ `echo -n "$(KERNELRELEASE)" | wc -c ` -gt $(uts_len) ]; then \
-	  echo '"$(KERNELRELEASE)" exceeds $(uts_len) characters' >&2;    \
-	  exit 1;                                                         \
-	fi;                                                               \
-	echo \#define UTS_RELEASE \"$(KERNELRELEASE)\"
-endef
-
-define filechk_version.h
-	if [ $(SUBLEVEL) -gt 255 ]; then                                 \
-		echo \#define LINUX_VERSION_CODE $(shell                 \
-		expr $(VERSION) \* 65536 + $(PATCHLEVEL) \* 256 + 255); \
-	else                                                             \
-		echo \#define LINUX_VERSION_CODE $(shell                 \
-		expr $(VERSION) \* 65536 + $(PATCHLEVEL) \* 256 + $(SUBLEVEL)); \
-	fi;                                                              \
-	echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) +  \
-	((c) > 255 ? 255 : (c)))';                                       \
-	echo \#define LINUX_VERSION_MAJOR $(VERSION);                    \
-	echo \#define LINUX_VERSION_PATCHLEVEL $(PATCHLEVEL);            \
-	echo \#define LINUX_VERSION_SUBLEVEL $(SUBLEVEL)
-endef
-
-$(version_h): private PATCHLEVEL := $(or $(PATCHLEVEL), 0)
-$(version_h): private SUBLEVEL := $(or $(SUBLEVEL), 0)
-$(version_h): FORCE
-	$(call filechk,version.h)
-
-include/generated/utsrelease.h: include/config/kernel.release FORCE
-	$(call filechk,utsrelease.h)
-
-filechk_compile.h = $(srctree)/scripts/mkcompile_h \
-	"$(UTS_MACHINE)" "$(CONFIG_CC_VERSION_TEXT)" "$(LD)"
-
-include/generated/compile.h: FORCE
-	$(call filechk,compile.h)
-
-PHONY += headerdep
-headerdep:
-	$(Q)find $(srctree)/include/ -name '*.h' | xargs --max-args 1 \
-	$(srctree)/scripts/headerdep.pl -I$(srctree)/include
-
-# ---------------------------------------------------------------------------
-# Kernel headers
-
-#Default location for installed headers
-export INSTALL_HDR_PATH = $(objtree)/usr
-
-quiet_cmd_headers_install = INSTALL $(INSTALL_HDR_PATH)/include
-      cmd_headers_install = \
-	mkdir -p $(INSTALL_HDR_PATH); \
-	rsync -mrl --include='*/' --include='*\.h' --exclude='*' \
-	usr/include $(INSTALL_HDR_PATH)
-
-PHONY += headers_install
-headers_install: headers
-	$(call cmd,headers_install)
-
-PHONY += archheaders archscripts
-
-hdr-inst := -f $(srctree)/scripts/Makefile.headersinst obj
-
-PHONY += headers
-headers: $(version_h) scripts_unifdef uapi-asm-generic archheaders archscripts
-	$(if $(filter um, $(SRCARCH)), $(error Headers not exportable for UML))
-	$(Q)$(MAKE) $(hdr-inst)=include/uapi
-	$(Q)$(MAKE) $(hdr-inst)=arch/$(SRCARCH)/include/uapi
-
-ifdef CONFIG_HEADERS_INSTALL
-prepare: headers
-endif
-
-PHONY += scripts_unifdef
-scripts_unifdef: scripts_basic
-	$(Q)$(MAKE) $(build)=scripts scripts/unifdef
-
-# ---------------------------------------------------------------------------
-# Install
-
-# Many distributions have the custom install script, /sbin/installkernel.
-# If DKMS is installed, 'make install' will eventually recurse back
-# to this Makefile to build and install external modules.
-# Cancel sub_make_done so that options such as M=, V=, etc. are parsed.
-
-quiet_cmd_install = INSTALL $(INSTALL_PATH)
-      cmd_install = unset sub_make_done; $(srctree)/scripts/install.sh
-
-# ---------------------------------------------------------------------------
-# vDSO install
-
-PHONY += vdso_install
-vdso_install: export INSTALL_FILES = $(vdso-install-y)
-vdso_install:
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.vdsoinst
-
-# ---------------------------------------------------------------------------
-# Tools
-
-ifdef CONFIG_OBJTOOL
-prepare: tools/objtool
-endif
-
-ifdef CONFIG_BPF
-ifdef CONFIG_DEBUG_INFO_BTF
-prepare: tools/bpf/resolve_btfids
-endif
-endif
-
-# The tools build system is not a part of Kbuild and tends to introduce
-# its own unique issues. If you need to integrate a new tool into Kbuild,
-# please consider locating that tool outside the tools/ tree and using the
-# standard Kbuild "hostprogs" syntax instead of adding a new tools/* entry
-# here. See Documentation/kbuild/makefiles.rst for details.
-
-PHONY += resolve_btfids_clean
-
-resolve_btfids_O = $(abspath $(objtree))/tools/bpf/resolve_btfids
-
-# tools/bpf/resolve_btfids directory might not exist
-# in output directory, skip its clean in that case
-resolve_btfids_clean:
-ifneq ($(wildcard $(resolve_btfids_O)),)
-	$(Q)$(MAKE) -sC $(srctree)/tools/bpf/resolve_btfids O=$(resolve_btfids_O) clean
-endif
-
-tools/: FORCE
-	$(Q)mkdir -p $(objtree)/tools
-	$(Q)$(MAKE) LDFLAGS= O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/
-
-tools/%: FORCE
-	$(Q)mkdir -p $(objtree)/tools
-	$(Q)$(MAKE) LDFLAGS= O=$(abspath $(objtree)) subdir=tools -C $(srctree)/tools/ $*
-
-# ---------------------------------------------------------------------------
-# Kernel selftest
-
-PHONY += kselftest
-kselftest: headers
-	$(Q)$(MAKE) -C $(srctree)/tools/testing/selftests run_tests
-
-kselftest-%: headers FORCE
-	$(Q)$(MAKE) -C $(srctree)/tools/testing/selftests $*
-
-PHONY += kselftest-merge
-kselftest-merge:
-	$(if $(wildcard $(objtree)/.config),, $(error No .config exists, config your kernel first!))
-	$(Q)find $(srctree)/tools/testing/selftests -name config -o -name config.$(UTS_MACHINE) | \
-		xargs $(srctree)/scripts/kconfig/merge_config.sh -y -m $(objtree)/.config
-	$(Q)$(MAKE) -f $(srctree)/Makefile olddefconfig
-
-# ---------------------------------------------------------------------------
-# Devicetree files
-
-ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/boot/dts/),)
-dtstree := arch/$(SRCARCH)/boot/dts
-endif
-
-ifneq ($(dtstree),)
-
-%.dtb: dtbs_prepare
-	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
-
-%.dtbo: dtbs_prepare
-	$(Q)$(MAKE) $(build)=$(dtstree) $(dtstree)/$@
-
-PHONY += dtbs dtbs_prepare dtbs_install dtbs_check
-dtbs: dtbs_prepare
-	$(Q)$(MAKE) $(build)=$(dtstree) need-dtbslist=1
-
-# include/config/kernel.release is actually needed when installing DTBs because
-# INSTALL_DTBS_PATH contains $(KERNELRELEASE). However, we do not want to make
-# dtbs_install depend on it as dtbs_install may run as root.
-dtbs_prepare: include/config/kernel.release scripts_dtc
-
-ifneq ($(filter dtbs_check, $(MAKECMDGOALS)),)
-export CHECK_DTBS=y
-endif
-
-ifneq ($(CHECK_DTBS),)
-dtbs_prepare: dt_binding_schemas
-endif
-
-dtbs_check: dtbs
-
-dtbs_install:
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.dtbinst obj=$(dtstree)
-
-ifdef CONFIG_OF_EARLY_FLATTREE
-all: dtbs
+ifeq ($(CONFIG_BT_COEXIST), y)
+_BTC_FILES += hal/btc/halbtc8703b1ant.o
 endif
 
 endif
 
-PHONY += scripts_dtc
-scripts_dtc: scripts_basic
-	$(Q)$(MAKE) $(build)=scripts/dtc
+########### HAL_RTL8723D #################################
+ifeq ($(CONFIG_RTL8723D), y)
 
-ifneq ($(filter dt_binding_check, $(MAKECMDGOALS)),)
-export CHECK_DTBS=y
+RTL871X = rtl8723d
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8723du
+MODULE_SUB_NAME = 8723du
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8723de
+MODULE_SUB_NAME = 8723de
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8723ds
+MODULE_SUB_NAME = 8723ds
 endif
 
-PHONY += dt_binding_check dt_binding_schemas
-dt_binding_check: dt_binding_schemas scripts_dtc
-	$(Q)$(MAKE) $(build)=Documentation/devicetree/bindings $@
+ccflags-y += -DCONFIG_RTL8723D
 
-dt_binding_schemas:
-	$(Q)$(MAKE) $(build)=Documentation/devicetree/bindings
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8723DPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
 
-PHONY += dt_compatible_check
-dt_compatible_check: dt_binding_schemas
-	$(Q)$(MAKE) $(build)=Documentation/devicetree/bindings $@
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8723d_fw.o \
+			hal/$(RTL871X)/$(RTL871X)_lps_poff.o
 
-# ---------------------------------------------------------------------------
-# Modules
 
-ifdef CONFIG_MODULES
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_recv.o
 
-# By default, build modules as well
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
+else
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
+endif
+
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8723D_USB.o
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8723D_PCIE.o
+endif
+
+ifeq ($(CONFIG_BT_COEXIST), y)
+_BTC_FILES += hal/btc/halbtc8723d1ant.o \
+				hal/btc/halbtc8723d2ant.o
+endif
+
+endif
+
+########### HAL_RTL8188F #################################
+ifeq ($(CONFIG_RTL8188F), y)
+
+RTL871X = rtl8188f
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8188fu
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8188fe
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8189fs
+endif
+
+ccflags-y += -DCONFIG_RTL8188F
+
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8188FPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
+
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8188f_fw.o
+
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
+
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
+else
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
+endif
+
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188F_USB.o
+endif
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188F_SDIO.o
+endif
+
+endif
+
+########### HAL_RTL8188GTV #################################
+ifeq ($(CONFIG_RTL8188GTV), y)
+
+RTL871X = rtl8188gtv
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8188gtvu
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8189gtvs
+endif
+
+ccflags-y += -DCONFIG_RTL8188GTV
+
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8188GTVPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
+
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8188gtv_fw.o
+
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_NAME)_recv.o
+
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
+else
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
+endif
+
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188GTV_USB.o
+endif
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8188GTV_SDIO.o
+endif
+
+endif
+
+########### HAL_RTL8822B #################################
+ifeq ($(CONFIG_RTL8822B), y)
+RTL871X := rtl8822b
+ifeq ($(CONFIG_USB_HCI), y)
+ifeq ($(CONFIG_BT_COEXIST), n)
+MODULE_NAME = 8812bu
+else
+MODULE_NAME = 88x2bu
+endif
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 88x2be
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 88x2bs
+endif
+
+endif
+########### HAL_RTL8821C #################################
+ifeq ($(CONFIG_RTL8821C), y)
+RTL871X := rtl8821c
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8821cu
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8821ce
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8821cs
+endif
+
+endif
+
+########### HAL_RTL8710B #################################
+ifeq ($(CONFIG_RTL8710B), y)
+
+RTL871X = rtl8710b
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8710bu
+MODULE_SUB_NAME = 8710bu
+endif
+
+ccflags-y += -DCONFIG_RTL8710B
+
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8710BPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
+
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8710b_fw.o \
+			hal/$(RTL871X)/$(RTL871X)_lps_poff.o
+
+
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_recv.o
+
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
+
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES +=hal/efuse/$(RTL871X)/HalEfuseMask8710B_USB.o
+endif
+
+endif
+
+########### HAL_RTL8192F #################################
+ifeq ($(CONFIG_RTL8192F), y)
+
+RTL871X = rtl8192f
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME = 8192fu
+MODULE_SUB_NAME = 8192fu
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 8192fe
+MODULE_SUB_NAME = 8192fe
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 8192fs
+MODULE_SUB_NAME = 8192fs
+endif
+
+ccflags-y += -DCONFIG_RTL8192F
+
+_HAL_INTFS_FILES += hal/HalPwrSeqCmd.o \
+					hal/$(RTL871X)/Hal8192FPwrSeq.o\
+					hal/$(RTL871X)/$(RTL871X)_sreset.o
+
+_HAL_INTFS_FILES +=	hal/$(RTL871X)/$(RTL871X)_hal_init.o \
+			hal/$(RTL871X)/$(RTL871X)_phycfg.o \
+			hal/$(RTL871X)/$(RTL871X)_rf6052.o \
+			hal/$(RTL871X)/$(RTL871X)_dm.o \
+			hal/$(RTL871X)/$(RTL871X)_rxdesc.o \
+			hal/$(RTL871X)/$(RTL871X)_cmd.o \
+			hal/$(RTL871X)/hal8192f_fw.o \
+			hal/$(RTL871X)/$(RTL871X)_lps_poff.o
+
+
+_HAL_INTFS_FILES +=	\
+			hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_halinit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_led.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_xmit.o \
+			hal/$(RTL871X)/$(HCI_NAME)/rtl$(MODULE_SUB_NAME)_recv.o
+			
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops_linux.o
+else
+_HAL_INTFS_FILES += hal/$(RTL871X)/$(HCI_NAME)/$(HCI_NAME)_ops.o
+endif
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+_HAL_INTFS_FILES += hal/efuse/$(RTL871X)/HalEfuseMask8192F_SDIO.o
+endif
+
+ifeq ($(CONFIG_USB_HCI), y)
+_HAL_INTFS_FILES += hal/efuse/$(RTL871X)/HalEfuseMask8192F_USB.o
+endif
+
+ifeq ($(CONFIG_PCI_HCI), y)
+_HAL_INTFS_FILES += hal/efuse/$(RTL871X)/HalEfuseMask8192F_PCIE.o
+endif
+
+endif
+
+########### HAL_RTL8822C #################################
+ifeq ($(CONFIG_RTL8822C), y)
+RTL871X := rtl8822c
+ifeq ($(CONFIG_USB_HCI), y)
+ifeq ($(CONFIG_BT_COEXIST), n)
+MODULE_NAME = 8812cu
+else
+MODULE_NAME = 88x2cu
+endif
+endif
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME = 88x2ce
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME = 88x2cs
+endif
+
+endif
+
+########### AUTO_CFG  #################################
+
+ifeq ($(CONFIG_AUTOCFG_CP), y)
+
+ifeq ($(CONFIG_MULTIDRV), y)
+$(shell cp $(TopDIR)/autoconf_multidrv_$(HCI_NAME)_linux.h $(TopDIR)/include/autoconf.h)
+else
+ifeq ($(CONFIG_RTL8188E)$(CONFIG_SDIO_HCI),yy)
+$(shell cp $(TopDIR)/autoconf_rtl8189e_$(HCI_NAME)_linux.h $(TopDIR)/include/autoconf.h)
+else ifeq ($(CONFIG_RTL8188F)$(CONFIG_SDIO_HCI),yy)
+$(shell cp $(TopDIR)/autoconf_rtl8189f_$(HCI_NAME)_linux.h $(TopDIR)/include/autoconf.h)
+else ifeq ($(CONFIG_RTL8723C),y)
+$(shell cp $(TopDIR)/autoconf_rtl8723c_$(HCI_NAME)_linux.h $(TopDIR)/include/autoconf.h)
+else
+$(shell cp $(TopDIR)/autoconf_$(RTL871X)_$(HCI_NAME)_linux.h $(TopDIR)/include/autoconf.h)
+endif
+endif
+
+endif
+
+########### END OF PATH  #################################
+
+ifeq ($(CONFIG_USB_HCI), y)
+ifeq ($(CONFIG_USB_AUTOSUSPEND), y)
+ccflags-y += -DCONFIG_USB_AUTOSUSPEND
+endif
+endif
+
+ifeq ($(CONFIG_MP_INCLUDED), y)
+#MODULE_NAME := $(MODULE_NAME)_mp
+ccflags-y += -DCONFIG_MP_INCLUDED
+endif
+
+ifeq ($(CONFIG_POWER_SAVING), y)
+ifneq ($(CONFIG_IPS_MODE), default)
+ccflags-y += -DRTW_IPS_MODE=$(CONFIG_IPS_MODE)
+endif
+ifneq ($(CONFIG_LPS_MODE), default)
+ccflags-y += -DRTW_LPS_MODE=$(CONFIG_LPS_MODE)
+endif
+ifneq ($(CONFIG_WOW_LPS_MODE), default)
+ccflags-y += -DRTW_WOW_LPS_MODE=$(CONFIG_WOW_LPS_MODE)
+endif
+ccflags-y += -DCONFIG_POWER_SAVING
+endif
+
+ifeq ($(CONFIG_HW_PWRP_DETECTION), y)
+ccflags-y += -DCONFIG_HW_PWRP_DETECTION
+endif
+
+ifeq ($(CONFIG_BT_COEXIST), y)
+ccflags-y += -DCONFIG_BT_COEXIST
+endif
+
+ifeq ($(CONFIG_WAPI_SUPPORT), y)
+ccflags-y += -DCONFIG_WAPI_SUPPORT
+endif
+
+
+ifeq ($(CONFIG_EFUSE_CONFIG_FILE), y)
+ccflags-y += -DCONFIG_EFUSE_CONFIG_FILE
+
+#EFUSE_MAP_PATH
+USER_EFUSE_MAP_PATH ?=
+ifneq ($(USER_EFUSE_MAP_PATH),)
+ccflags-y += -DEFUSE_MAP_PATH=\"$(USER_EFUSE_MAP_PATH)\"
+else ifeq ($(MODULE_NAME), 8189es)
+ccflags-y += -DEFUSE_MAP_PATH=\"/system/etc/wifi/wifi_efuse_8189e.map\"
+else ifeq ($(MODULE_NAME), 8723bs)
+ccflags-y += -DEFUSE_MAP_PATH=\"/system/etc/wifi/wifi_efuse_8723bs.map\"
+else
+ccflags-y += -DEFUSE_MAP_PATH=\"/system/etc/wifi/wifi_efuse_$(MODULE_NAME).map\"
+endif
+
+#WIFIMAC_PATH
+USER_WIFIMAC_PATH ?=
+ifneq ($(USER_WIFIMAC_PATH),)
+ccflags-y += -DWIFIMAC_PATH=\"$(USER_WIFIMAC_PATH)\"
+else
+ccflags-y += -DWIFIMAC_PATH=\"/data/wifimac.txt\"
+endif
+
+endif
+
+ifeq ($(CONFIG_EXT_CLK), y)
+ccflags-y += -DCONFIG_EXT_CLK
+endif
+
+ifeq ($(CONFIG_TRAFFIC_PROTECT), y)
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+endif
+
+ifeq ($(CONFIG_LOAD_PHY_PARA_FROM_FILE), y)
+ccflags-y += -DCONFIG_LOAD_PHY_PARA_FROM_FILE
+#ccflags-y += -DREALTEK_CONFIG_PATH_WITH_IC_NAME_FOLDER
+ccflags-y += -DREALTEK_CONFIG_PATH=\"/lib/firmware/\"
+endif
+
+ifeq ($(CONFIG_TXPWR_BY_RATE), n)
+ccflags-y += -DCONFIG_TXPWR_BY_RATE=0
+else ifeq ($(CONFIG_TXPWR_BY_RATE), y)
+ccflags-y += -DCONFIG_TXPWR_BY_RATE=1
+endif
+ifeq ($(CONFIG_TXPWR_BY_RATE_EN), n)
+ccflags-y += -DCONFIG_TXPWR_BY_RATE_EN=0
+else ifeq ($(CONFIG_TXPWR_BY_RATE_EN), y)
+ccflags-y += -DCONFIG_TXPWR_BY_RATE_EN=1
+else ifeq ($(CONFIG_TXPWR_BY_RATE_EN), auto)
+ccflags-y += -DCONFIG_TXPWR_BY_RATE_EN=2
+endif
+
+ifeq ($(CONFIG_TXPWR_LIMIT), n)
+ccflags-y += -DCONFIG_TXPWR_LIMIT=0
+else ifeq ($(CONFIG_TXPWR_LIMIT), y)
+ccflags-y += -DCONFIG_TXPWR_LIMIT=1
+endif
+ifeq ($(CONFIG_TXPWR_LIMIT_EN), n)
+ccflags-y += -DCONFIG_TXPWR_LIMIT_EN=0
+else ifeq ($(CONFIG_TXPWR_LIMIT_EN), y)
+ccflags-y += -DCONFIG_TXPWR_LIMIT_EN=1
+else ifeq ($(CONFIG_TXPWR_LIMIT_EN), auto)
+ccflags-y += -DCONFIG_TXPWR_LIMIT_EN=2
+endif
+
+ifneq ($(CONFIG_RTW_CHPLAN), 0xFF)
+ccflags-y += -DCONFIG_RTW_CHPLAN=$(CONFIG_RTW_CHPLAN)
+endif
+
+ifeq ($(CONFIG_CALIBRATE_TX_POWER_BY_REGULATORY), y)
+ccflags-y += -DCONFIG_CALIBRATE_TX_POWER_BY_REGULATORY
+endif
+
+ifeq ($(CONFIG_CALIBRATE_TX_POWER_TO_MAX), y)
+ccflags-y += -DCONFIG_CALIBRATE_TX_POWER_TO_MAX
+endif
+
+ifeq ($(CONFIG_RTW_ADAPTIVITY_EN), disable)
+ccflags-y += -DCONFIG_RTW_ADAPTIVITY_EN=0
+else ifeq ($(CONFIG_RTW_ADAPTIVITY_EN), enable)
+ccflags-y += -DCONFIG_RTW_ADAPTIVITY_EN=1
+endif
+
+ifeq ($(CONFIG_RTW_ADAPTIVITY_MODE), normal)
+ccflags-y += -DCONFIG_RTW_ADAPTIVITY_MODE=0
+else ifeq ($(CONFIG_RTW_ADAPTIVITY_MODE), carrier_sense)
+ccflags-y += -DCONFIG_RTW_ADAPTIVITY_MODE=1
+endif
+
+ifeq ($(CONFIG_SIGNAL_SCALE_MAPPING), y)
+ccflags-y += -DCONFIG_SIGNAL_SCALE_MAPPING
+endif
+
+ifeq ($(CONFIG_80211W), y)
+ccflags-y += -DCONFIG_IEEE80211W
+endif
+
+ifeq ($(CONFIG_WOWLAN), y)
+ccflags-y += -DCONFIG_WOWLAN -DRTW_WAKEUP_EVENT=$(CONFIG_WAKEUP_TYPE)
+ccflags-y += -DRTW_SUSPEND_TYPE=$(CONFIG_SUSPEND_TYPE)
+ifeq ($(CONFIG_WOW_STA_MIX), y)
+ccflags-y += -DRTW_WOW_STA_MIX
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_RTW_SDIO_PM_KEEP_POWER
+endif
+endif
+
+ifeq ($(CONFIG_AP_WOWLAN), y)
+ccflags-y += -DCONFIG_AP_WOWLAN
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_RTW_SDIO_PM_KEEP_POWER
+endif
+endif
+
+ifeq ($(CONFIG_PNO_SUPPORT), y)
+ccflags-y += -DCONFIG_PNO_SUPPORT
+ifeq ($(CONFIG_PNO_SET_DEBUG), y)
+ccflags-y += -DCONFIG_PNO_SET_DEBUG
+endif
+endif
+
+ifeq ($(CONFIG_GPIO_WAKEUP), y)
+ccflags-y += -DCONFIG_GPIO_WAKEUP
+ifeq ($(CONFIG_ONE_PIN_GPIO), y)
+ccflags-y += -DCONFIG_RTW_ONE_PIN_GPIO
+endif
+ifeq ($(CONFIG_HIGH_ACTIVE_DEV2HST), y)
+ccflags-y += -DHIGH_ACTIVE_DEV2HST=1
+else
+ccflags-y += -DHIGH_ACTIVE_DEV2HST=0
+endif
+endif
+
+ifeq ($(CONFIG_HIGH_ACTIVE_HST2DEV), y)
+ccflags-y += -DHIGH_ACTIVE_HST2DEV=1
+else
+ccflags-y += -DHIGH_ACTIVE_HST2DEV=0
+endif
+
+ifneq ($(CONFIG_WAKEUP_GPIO_IDX), default)
+ccflags-y += -DWAKEUP_GPIO_IDX=$(CONFIG_WAKEUP_GPIO_IDX)
+endif
+
+ifeq ($(CONFIG_RTW_SDIO_PM_KEEP_POWER), y)
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_RTW_SDIO_PM_KEEP_POWER
+endif
+endif
+
+ifeq ($(CONFIG_REDUCE_TX_CPU_LOADING), y)
+ccflags-y += -DCONFIG_REDUCE_TX_CPU_LOADING
+endif
+
+ifeq ($(CONFIG_BR_EXT), y)
+BR_NAME = br0
+ccflags-y += -DCONFIG_BR_EXT
+ccflags-y += '-DCONFIG_BR_EXT_BRNAME="'$(BR_NAME)'"'
+endif
+
+
+ifeq ($(CONFIG_TDLS), y)
+ccflags-y += -DCONFIG_TDLS
+endif
+
+ifeq ($(CONFIG_WIFI_MONITOR), y)
+ccflags-y += -DCONFIG_WIFI_MONITOR
+endif
+
+ifeq ($(CONFIG_MCC_MODE), y)
+ccflags-y += -DCONFIG_MCC_MODE
+endif
+
+ifeq ($(CONFIG_RTW_NAPI), y)
+ccflags-y += -DCONFIG_RTW_NAPI
+endif
+
+ifeq ($(CONFIG_RTW_GRO), y)
+ccflags-y += -DCONFIG_RTW_GRO
+endif
+
+ifeq ($(CONFIG_RTW_REPEATER_SON), y)
+ccflags-y += -DCONFIG_RTW_REPEATER_SON
+endif
+
+ifeq ($(CONFIG_RTW_IPCAM_APPLICATION), y)
+ccflags-y += -DCONFIG_RTW_IPCAM_APPLICATION
+ifeq ($(CONFIG_WIFI_MONITOR), n)
+ccflags-y += -DCONFIG_WIFI_MONITOR
+endif
+endif
+
+ifeq ($(CONFIG_RTW_NETIF_SG), y)
+ccflags-y += -DCONFIG_RTW_NETIF_SG
+endif
+
+ifeq ($(CONFIG_ICMP_VOQ), y)
+ccflags-y += -DCONFIG_ICMP_VOQ
+endif
+
+ifeq ($(CONFIG_IP_R_MONITOR), y)
+ccflags-y += -DCONFIG_IP_R_MONITOR
+endif
+
+ifeq ($(CONFIG_RTW_WIFI_HAL), y)
+#ccflags-y += -DCONFIG_RTW_WIFI_HAL_DEBUG
+ccflags-y += -DCONFIG_RTW_WIFI_HAL
+ccflags-y += -DCONFIG_RTW_CFGVEDNOR_LLSTATS
+ccflags-y += -DCONFIG_RTW_CFGVENDOR_RANDOM_MAC_OUI
+ccflags-y += -DCONFIG_RTW_CFGVEDNOR_RSSIMONITOR
+ccflags-y += -DCONFIG_RTW_CFGVENDOR_WIFI_LOGGER
+endif
+
+ifeq ($(CONFIG_MP_VHT_HW_TX_MODE), y)
+ccflags-y += -DCONFIG_MP_VHT_HW_TX_MODE
+ifeq ($(CONFIG_PLATFORM_I386_PC), y)
+## For I386 X86 ToolChain use Hardware FLOATING
+ccflags-y += -mhard-float
+else
+## For ARM ToolChain use Hardware FLOATING
+ccflags-y += -mfloat-abi=hard
+endif
+endif
+
+ifeq ($(CONFIG_APPEND_VENDOR_IE_ENABLE), y)
+ccflags-y += -DCONFIG_APPEND_VENDOR_IE_ENABLE
+endif
+
+ifeq ($(CONFIG_RTW_DEBUG), y)
+ccflags-y += -DCONFIG_RTW_DEBUG
+ccflags-y += -DRTW_LOG_LEVEL=$(CONFIG_RTW_LOG_LEVEL)
+endif
+
+ifeq ($(CONFIG_PROC_DEBUG), y)
+ccflags-y += -DCONFIG_PROC_DEBUG
+endif
+
+ccflags-y += -DDM_ODM_SUPPORT_TYPE=0x04
+
+ifeq ($(CONFIG_PLATFORM_I386_PC), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+SUBARCH := $(shell uname -m | sed -e s/i.86/i386/)
+ARCH ?= $(SUBARCH)
+CROSS_COMPILE ?=
+KVER  := $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
+STAGINGMODDIR := /lib/modules/$(KVER)/kernel/drivers/staging
+endif
+
+ifeq ($(CONFIG_PLATFORM_NV_TK1), y)
+ccflags-y += -DCONFIG_PLATFORM_NV_TK1
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_P2P_IPS -DCONFIG_PLATFORM_ANDROID
+# Enable this for Android 5.0
+ccflags-y += -DCONFIG_RADIO_WORK
+ccflags-y += -DRTW_VENDOR_EXT_SUPPORT
+ccflags-y += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+ARCH ?= arm
+
+CROSS_COMPILE := /mnt/newdisk/android_sdk/nvidia_tk1/android_L/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8/bin/arm-eabi-
+KSRC :=/mnt/newdisk/android_sdk/nvidia_tk1/android_L/out/target/product/shieldtablet/obj/KERNEL/
+MODULE_NAME = wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_NV_TK1_UBUNTU), y)
+ccflags-y += -DCONFIG_PLATFORM_NV_TK1
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+
+ARCH ?= arm
+
+CROSS_COMPILE ?=
+KVER := $(shell uname -r)
+KSRC := /lib/modules/$(KVER)/build
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/net/wireless/
+INSTALL_PREFIX :=
+endif
+
+ifeq ($(CONFIG_PLATFORM_ACTIONS_ATM702X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ANDROID -DCONFIG_PLATFORM_ACTIONS_ATM702X
+#ARCH := arm
+ARCH := $(R_ARCH)
+#CROSS_COMPILE := arm-none-linux-gnueabi-
+CROSS_COMPILE := $(R_CROSS_COMPILE)
+KVER:= 3.4.0
+#KSRC := ../../../../build/out/kernel
+KSRC := $(KERNEL_BUILD_PATH)
+MODULE_NAME :=wlan
+endif
+
+
+ifeq ($(CONFIG_PLATFORM_ACTIONS_ATM705X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+#ccflags-y += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+# default setting for Android 4.1, 4.2, 4.3, 4.4
+ccflags-y += -DCONFIG_PLATFORM_ACTIONS_ATM705X
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+
+# Enable this for Android 5.0
+ccflags-y += -DCONFIG_RADIO_WORK
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_PLATFORM_OPS
+_PLATFORM_FILES += platform/platform_arm_act_sdio.o
+endif
+
+ARCH := arm
+CROSS_COMPILE := /opt/arm-2011.09/bin/arm-none-linux-gnueabi-
+KSRC := /home/android_sdk/Action-semi/705a_android_L/android/kernel
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SUN50IW1P1), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN50IW1P1
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_RESUME_IN_WORKQUEUE
+ccflags-y += -DCONFIG_PLATFORM_OPS
+
+# Enable this for Android 5.0
+ccflags-y += -DCONFIG_RADIO_WORK
+
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_PLATFORM_FILES += platform/platform_ARM_SUN50IW1P1_sdio.o
+endif
+
+ARCH := arm64
+# ===Cross compile setting for Android 5.1(64) SDK ===
+CROSS_COMPILE := /home/android_sdk/Allwinner/a64/android-51/lichee/out/sun50iw1p1/android/common/buildroot/external-toolchain/bin/aarch64-linux-gnu-
+KSRC :=/home/android_sdk/Allwinner/a64/android-51/lichee/linux-3.10/
+endif
+
+ifeq ($(CONFIG_PLATFORM_TI_AM3517), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ANDROID -DCONFIG_PLATFORM_SHUTTLE
+CROSS_COMPILE := arm-eabi-
+KSRC := $(shell pwd)/../../../Android/kernel
+ARCH := arm
+endif
+
+ifeq ($(CONFIG_PLATFORM_MSTAR_TITANIA12), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_MSTAR -DCONFIG_PLATFORM_MSTAR_TITANIA12
+ARCH:=mips
+CROSS_COMPILE:= /usr/src/Mstar_kernel/mips-4.3/bin/mips-linux-gnu-
+KVER:= 2.6.28.9
+KSRC:= /usr/src/Mstar_kernel/2.6.28.9/
+endif
+
+ifeq ($(CONFIG_PLATFORM_MSTAR), y)
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_MSTAR
+ccflags-y += -DCONFIG_PLATFORM_MSTAR_HIGH
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX -DCONFIG_FIX_NR_BULKIN_BUFFER
+endif
+ARCH:=arm
+CROSS_COMPILE:= /usr/src/bin/arm-none-linux-gnueabi-
+KVER:= 3.1.10
+KSRC:= /usr/src/Mstar_kernel/3.1.10/
+endif
+
+ifeq ($(CONFIG_PLATFORM_ANDROID_X86), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+SUBARCH := $(shell uname -m | sed -e s/i.86/i386/)
+ARCH := $(SUBARCH)
+CROSS_COMPILE := /media/DATA-2/android-x86/ics-x86_20120130/prebuilt/linux-x86/toolchain/i686-unknown-linux-gnu-4.2.1/bin/i686-unknown-linux-gnu-
+KSRC := /media/DATA-2/android-x86/ics-x86_20120130/out/target/product/generic_x86/obj/kernel
+MODULE_NAME :=wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ANDROID_INTEL_X86), y)
+ccflags-y += -DCONFIG_PLATFORM_ANDROID_INTEL_X86
+ccflags-y += -DCONFIG_PLATFORM_INTEL_BYT
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ANDROID
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_SKIP_SIGNAL_SCALE_MAPPING
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_RESUME_IN_WORKQUEUE
+endif
+endif
+
+ifeq ($(CONFIG_PLATFORM_JB_X86), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+SUBARCH := $(shell uname -m | sed -e s/i.86/i386/)
+ARCH := $(SUBARCH)
+CROSS_COMPILE := /home/android_sdk/android-x86_JB/prebuilts/gcc/linux-x86/x86/i686-linux-android-4.7/bin/i686-linux-android-
+KSRC := /home/android_sdk/android-x86_JB/out/target/product/x86/obj/kernel/
+MODULE_NAME :=wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_PXA2XX), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH := arm
+CROSS_COMPILE := arm-none-linux-gnueabi-
+KVER  := 2.6.34.1
+KSRC ?= /usr/src/linux-2.6.34.1
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_S3C2K4), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH := arm
+CROSS_COMPILE := arm-linux-
+KVER  := 2.6.24.7_$(ARCH)
+KSRC := /usr/src/kernels/linux-$(KVER)
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_S3C6K4), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH := arm
+CROSS_COMPILE := arm-none-linux-gnueabi-
+KVER  := 2.6.34.1
+KSRC ?= /usr/src/linux-2.6.34.1
+endif
+
+ifeq ($(CONFIG_PLATFORM_RTD2880B), y)
+ccflags-y += -DCONFIG_BIG_ENDIAN -DCONFIG_PLATFORM_RTD2880B
+ARCH:=
+CROSS_COMPILE:=
+KVER:=
+KSRC:=
+endif
+
+ifeq ($(CONFIG_PLATFORM_MIPS_RMI), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH:=mips
+CROSS_COMPILE:=mipsisa32r2-uclibc-
+KVER:=
+KSRC:= /root/work/kernel_realtek
+endif
+
+ifeq ($(CONFIG_PLATFORM_MIPS_PLM), y)
+ccflags-y += -DCONFIG_BIG_ENDIAN
+ARCH:=mips
+CROSS_COMPILE:=mipsisa32r2-uclibc-
+KVER:=
+KSRC:= /root/work/kernel_realtek
+endif
+
+ifeq ($(CONFIG_PLATFORM_MSTAR389), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_MSTAR389
+ARCH:=mips
+CROSS_COMPILE:= mips-linux-gnu-
+KVER:= 2.6.28.10
+KSRC:= /home/mstar/mstar_linux/2.6.28.9/
+endif
+
+ifeq ($(CONFIG_PLATFORM_MIPS_AR9132), y)
+ccflags-y += -DCONFIG_BIG_ENDIAN
+ARCH := mips
+CROSS_COMPILE := mips-openwrt-linux-
+KSRC := /home/alex/test_openwrt/tmp/linux-2.6.30.9
+endif
+
+ifeq ($(CONFIG_PLATFORM_DMP_PHILIPS), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DRTK_DMP_PLATFORM
+ARCH := mips
+#CROSS_COMPILE:=/usr/local/msdk-4.3.6-mips-EL-2.6.12.6-0.9.30.3/bin/mipsel-linux-
+CROSS_COMPILE:=/usr/local/toolchain_mipsel/bin/mipsel-linux-
+KSRC ?=/usr/local/Jupiter/linux-2.6.12
+endif
+
+ifeq ($(CONFIG_PLATFORM_RTK_DMP), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DRTK_DMP_PLATFORM  -DCONFIG_WIRELESS_EXT
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+_PLATFORM_FILES += platform/platform_RTK_DMP_usb.o
+endif
+ARCH:=mips
+CROSS_COMPILE:=mipsel-linux-
+KVER:=
+KSRC ?= /usr/src/DMP_Kernel/jupiter/linux-2.6.12
+endif
+
+ifeq ($(CONFIG_PLATFORM_MT53XX), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_MT53XX
+ARCH:= arm
+CROSS_COMPILE:= arm11_mtk_le-
+KVER:= 2.6.27
+KSRC?= /proj/mtk00802/BD_Compare/BDP/Dev/BDP_V301/BDP_Linux/linux-2.6.27
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_MX51_241H), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_WISTRON_PLATFORM
+ARCH := arm
+CROSS_COMPILE := /opt/freescale/usr/local/gcc-4.1.2-glibc-2.5-nptl-3/arm-none-linux-gnueabi/bin/arm-none-linux-gnueabi-
+KVER  := 2.6.31
+KSRC ?= /lib/modules/2.6.31-770-g0e46b52/source
+endif
+
+ifeq ($(CONFIG_PLATFORM_FS_MX61), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH := arm
+CROSS_COMPILE := /home/share/CusEnv/FreeScale/arm-eabi-4.4.3/bin/arm-eabi-
+KSRC ?= /home/share/CusEnv/FreeScale/FS_kernel_env
+endif
+
+
+
+ifeq ($(CONFIG_PLATFORM_ACTIONS_ATJ227X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ACTIONS_ATJ227X
+ARCH := mips
+CROSS_COMPILE := /home/cnsd4/project/actions/tools-2.6.27/bin/mipsel-linux-gnu-
+KVER  := 2.6.27
+KSRC := /home/cnsd4/project/actions/linux-2.6.27.28
+endif
+
+ifeq ($(CONFIG_PLATFORM_TI_DM365), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_TI_DM365
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_RX
+ccflags-y += -DCONFIG_SINGLE_XMIT_BUF -DCONFIG_SINGLE_RECV_BUF
+ARCH := arm
+#CROSS_COMPILE := /home/cnsd4/Appro/mv_pro_5.0/montavista/pro/devkit/arm/v5t_le/bin/arm_v5t_le-
+#KSRC := /home/cnsd4/Appro/mv_pro_5.0/montavista/pro/devkit/lsp/ti-davinci/linux-dm365
+CROSS_COMPILE := /opt/montavista/pro5.0/devkit/arm/v5t_le/bin/arm-linux-
+KSRC:= /home/vivotek/lsp/DM365/kernel_platform/kernel/linux-2.6.18
+KERNELOUTPUT := ${PRODUCTDIR}/tmp
+KVER  := 2.6.18
+endif
+
+ifeq ($(CONFIG_PLATFORM_MOZART), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_MOZART
+ARCH := arm
+CROSS_COMPILE := /home/vivotek/lsp/mozart3v2/Mozart3e_Toolchain/build_arm_nofpu/usr/bin/arm-linux-
+KVER  := $(shell uname -r)
+KSRC:= /opt/Vivotek/lsp/mozart3v2/kernel_platform/kernel/mozart_kernel-1.17
+KERNELOUTPUT := /home/pink/sample/ODM/IP8136W-VINT/tmp/kernel
+endif
+
+ifeq ($(CONFIG_PLATFORM_TEGRA3_CARDHU), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android 4.1, 4.2
+ccflags-y += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/nvidia/tegra-16r3-partner-android-4.1_20120723/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+KSRC := /home/android_sdk/nvidia/tegra-16r3-partner-android-4.1_20120723/out/target/product/cardhu/obj/KERNEL
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_TEGRA4_DALMORE), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android 4.1, 4.2
+ccflags-y += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/nvidia/tegra-17r9-partner-android-4.2-dalmore_20130131/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
+KSRC := /home/android_sdk/nvidia/tegra-17r9-partner-android-4.2-dalmore_20130131/out/target/product/dalmore/obj/KERNEL
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_TCC8900), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/Telechips/SDK_2304_20110613/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+KSRC := /home/android_sdk/Telechips/SDK_2304_20110613/kernel
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_TCC8920), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/Telechips/v12.06_r1-tcc-android-4.0.4/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+KSRC := /home/android_sdk/Telechips/v12.06_r1-tcc-android-4.0.4/kernel
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_TCC8920_JB42), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/Telechips/v13.03_r1-tcc-android-4.2.2_ds_patched/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
+KSRC := /home/android_sdk/Telechips/v13.03_r1-tcc-android-4.2.2_ds_patched/kernel
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_RK2818), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ANDROID -DCONFIG_PLATFORM_ROCKCHIPS
+ARCH := arm
+CROSS_COMPILE := /usr/src/release_fae_version/toolchain/arm-eabi-4.4.0/bin/arm-eabi-
+KSRC := /usr/src/release_fae_version/kernel25_A7_281x
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_RK3188), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ANDROID -DCONFIG_PLATFORM_ROCKCHIPS
+# default setting for Android 4.1, 4.2, 4.3, 4.4
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+# default setting for Power control
+ccflags-y += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+ccflags-y += -DRTW_SUPPORT_PLATFORM_SHUTDOWN
+# default setting for Special function
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/Rockchip/Rk3188/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
+KSRC := /home/android_sdk/Rockchip/Rk3188/kernel
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_RK3066), y)
+ccflags-y += -DCONFIG_PLATFORM_ARM_RK3066
+ccflags-y += -DRTW_ENABLE_WIFI_CONTROL_FUNC
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DRTW_SUPPORT_PLATFORM_SHUTDOWN
+endif
+ccflags-y += -fno-pic
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/Rockchip/rk3066_20130607/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-
+#CROSS_COMPILE := /home/android_sdk/Rockchip/Rk3066sdk/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin/arm-linux-androideabi-
+KSRC := /home/android_sdk/Rockchip/Rk3066sdk/kernel
+MODULE_NAME :=wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_URBETTER), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN #-DCONFIG_MINIMAL_MEMORY_USAGE
+ARCH := arm
+CROSS_COMPILE := /media/DATA-1/urbetter/arm-2009q3/bin/arm-none-linux-gnueabi-
+KSRC := /media/DATA-1/urbetter/ics-urbetter/kernel
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_TI_PANDA), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN #-DCONFIG_MINIMAL_MEMORY_USAGE
+ARCH := arm
+#CROSS_COMPILE := /media/DATA-1/aosp/ics-aosp_20111227/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+#KSRC := /media/DATA-1/aosp/android-omap-panda-3.0_20120104
+CROSS_COMPILE := /media/DATA-1/android-4.0/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-
+KSRC := /media/DATA-1/android-4.0/panda_kernel/omap
+MODULE_NAME := wlan
+endif
+
+ifeq ($(CONFIG_PLATFORM_MIPS_JZ4760), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_MINIMAL_MEMORY_USAGE
+ARCH ?= mips
+CROSS_COMPILE ?= /mnt/sdb5/Ingenic/Umido/mips-4.3/bin/mips-linux-gnu-
+KSRC ?= /mnt/sdb5/Ingenic/Umido/kernel
+endif
+
+ifeq ($(CONFIG_PLATFORM_SZEBOOK), y)
+ccflags-y += -DCONFIG_BIG_ENDIAN
+ARCH:=arm
+CROSS_COMPILE:=/opt/crosstool2/bin/armeb-unknown-linux-gnueabi-
+KVER:= 2.6.31.6
+KSRC:= ../code/linux-2.6.31.6-2020/
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SUNxI), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUNxI
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+# default setting for A10-EVB mmc0
+#ccflags-y += -DCONFIG_WITS_EVB_V13
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_sdio.o
+endif
+
+ARCH := arm
+#CROSS_COMPILE := arm-none-linux-gnueabi-
+CROSS_COMPILE=/home/android_sdk/Allwinner/a10/android-jb42/lichee-jb42/buildroot/output/external-toolchain/bin/arm-none-linux-gnueabi-
+KVER  := 3.0.8
+#KSRC:= ../lichee/linux-3.0/
+KSRC=/home/android_sdk/Allwinner/a10/android-jb42/lichee-jb42/linux-3.0
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SUN6I), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN6I
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2, 4.3, 4.4
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y +=  -DCONFIG_QOS_OPTIMIZATION
+
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+# default setting for A31-EVB mmc0
+ccflags-y += -DCONFIG_A31_EVB
+_PLATFORM_FILES += platform/platform_ARM_SUNnI_sdio.o
+endif
+
+ARCH := arm
+#Android-JB42
+#CROSS_COMPILE := /home/android_sdk/Allwinner/a31/android-jb42/lichee/buildroot/output/external-toolchain/bin/arm-linux-gnueabi-
+#KSRC :=/home/android_sdk/Allwinner/a31/android-jb42/lichee/linux-3.3
+#ifeq ($(CONFIG_USB_HCI), y)
+#MODULE_NAME := 8188eu_sw
+#endif
+# ==== Cross compile setting for kitkat-a3x_v4.5 =====
+CROSS_COMPILE := /home/android_sdk/Allwinner/a31/kitkat-a3x_v4.5/lichee/buildroot/output/external-toolchain/bin/arm-linux-gnueabi-
+KSRC :=/home/android_sdk/Allwinner/a31/kitkat-a3x_v4.5/lichee/linux-3.3
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SUN7I), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN7I
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2, 4.3, 4.4
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y +=  -DCONFIG_QOS_OPTIMIZATION
+
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_PLATFORM_FILES += platform/platform_ARM_SUNnI_sdio.o
+endif
+
+ARCH := arm
+# ===Cross compile setting for Android 4.2 SDK ===
+#CROSS_COMPILE := /home/android_sdk/Allwinner/a20_evb/lichee/out/android/common/buildroot/external-toolchain/bin/arm-linux-gnueabi-
+#KSRC := /home/android_sdk/Allwinner/a20_evb/lichee/linux-3.3
+# ==== Cross compile setting for Android 4.3 SDK =====
+#CROSS_COMPILE := /home/android_sdk/Allwinner/a20/android-jb43/lichee/out/android/common/buildroot/external-toolchain/bin/arm-linux-gnueabi-
+#KSRC := /home/android_sdk/Allwinner/a20/android-jb43/lichee/linux-3.4
+# ==== Cross compile setting for kitkat-a20_v4.4 =====
+CROSS_COMPILE := /home/android_sdk/Allwinner/a20/kitkat-a20_v4.4/lichee/out/android/common/buildroot/external-toolchain/bin/arm-linux-gnueabi-
+KSRC := /home/android_sdk/Allwinner/a20/kitkat-a20_v4.4/lichee/linux-3.4
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SUN8I_W3P1), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN8I
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN8I_W3P1
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_PLATFORM_FILES += platform/platform_ARM_SUNnI_sdio.o
+endif
+
+ARCH := arm
+# ===Cross compile setting for Android 4.2 SDK ===
+#CROSS_COMPILE := /home/android_sdk/Allwinner/a23/android-jb42/lichee/out/android/common/buildroot/external-toolchain/bin/arm-linux-gnueabi-
+#KSRC :=/home/android_sdk/Allwinner/a23/android-jb42/lichee/linux-3.4
+# ===Cross compile setting for Android 4.4 SDK ===
+CROSS_COMPILE := /home/android_sdk/Allwinner/a23/android-kk44/lichee/out/android/common/buildroot/external-toolchain/bin/arm-linux-gnueabi-
+KSRC :=/home/android_sdk/Allwinner/a23/android-kk44/lichee/linux-3.4
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SUN8I_W5P1), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN8I
+ccflags-y += -DCONFIG_PLATFORM_ARM_SUN8I_W5P1
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+
+# Enable this for Android 5.0
+ccflags-y += -DCONFIG_RADIO_WORK
+
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_PLATFORM_FILES += platform/platform_ARM_SUNnI_sdio.o
+endif
+
+ARCH := arm
+# ===Cross compile setting for Android L SDK ===
+CROSS_COMPILE := /home/android_sdk/Allwinner/a33/android-L/lichee/out/sun8iw5p1/android/common/buildroot/external-toolchain/bin/arm-linux-gnueabi-
+KSRC :=/home/android_sdk/Allwinner/a33/android-L/lichee/linux-3.4
+endif
+
+ifeq ($(CONFIG_PLATFORM_ACTIONS_ATV5201), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_ACTIONS_ATV5201
+ccflags-y += -DCONFIG_SDIO_DISABLE_RXFIFO_POLLING_LOOP
+ARCH := mips
+CROSS_COMPILE := mipsel-linux-gnu-
+KVER  := $(KERNEL_VER)
+KSRC:= $(CFGDIR)/../../kernel/linux-$(KERNEL_VER)
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_RTD299X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ifeq ($(CONFIG_ANDROID), y)
+# Enable this for Android 5.0
+ccflags-y += -DCONFIG_RADIO_WORK
+endif
+#ARCH, CROSS_COMPILE, KSRC,and  MODDESTDIR are provided by external makefile
+INSTALL_PREFIX :=
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_RTD299X_LG), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DRTW_P2P_GROUP_INTERFACE=1
+ccflags-y += -DCONFIG_IFACE_NUMBER=3
+#ccflags-y += -DCONFIG_FIX_HWPORT
+ccflags-y += -DLGE_PRIVATE
+ccflags-y += -DPURE_SUPPLICANT
+ccflags-y += -DCONFIG_CUSTOMIZED_COUNTRY_CHPLAN_MAP -DCONFIG_RTW_IOCTL_SET_COUNTRY
+ccflags-y += -DDBG_RX_DFRAME_RAW_DATA
+ccflags-y += -DRTW_REDUCE_SCAN_SWITCH_CH_TIME
+ARCH ?= arm
+KVER ?=
+
+ifneq ($(PLATFORM), WEBOS)
+$(info PLATFORM is empty)
+CROSS_COMPILE ?= /mnt/newdisk/LGE/arm-lg115x-linux-gnueabi-4.8-2016.03-x86_64/bin/arm-lg115x-linux-gnueabi-
+KSRC ?= /mnt/newdisk/LGE/linux-rockhopper_k3lp_drd4tv_423
+endif
+
+CROSS_COMPILE ?=
+KSRC ?= $(LINUX_SRC)
+INSTALL_PREFIX ?=
+endif
+
+ifeq ($(CONFIG_PLATFORM_HISILICON), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -DCONFIG_PLATFORM_HISILICON
+ifeq ($(SUPPORT_CONCURRENT),y)
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+endif
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH := arm
+ifeq ($(CROSS_COMPILE),)
+       CROSS_COMPILE = arm-hisiv200-linux-
+endif
+MODULE_NAME := rtl8192eu
+ifeq ($(KSRC),)
+       KSRC := ../../../../../../kernel/linux-3.4.y
+endif
+endif
+
+ifeq ($(CONFIG_PLATFORM_HISILICON_HI3798), y)
+ccflags-y += -DCONFIG_PLATFORM_HISILICON
+ccflags-y += -DCONFIG_PLATFORM_HISILICON_HI3798
+#ccflags-y += -DCONFIG_PLATFORM_HISILICON_HI3798_MV200_HDMI_DONGLE
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211
+ccflags-y += -DRTW_USE_CFG80211_STA_EVENT
+# default setting for Android 5.x and later
+#ccflags-y += -DCONFIG_RADIO_WORK
+
+# If system could power on and recognize Wi-Fi SDIO automatically,
+# platfrom operations are not necessary.
+#ifeq ($(CONFIG_SDIO_HCI), y)
+#ccflags-y += -DCONFIG_PLATFORM_OPS
+#_PLATFORM_FILES += platform/platform_hisilicon_hi3798_sdio.o
+#ccflags-y += -DCONFIG_HISI_SDIO_ID=1
+#endif
+
+ARCH ?= arm
+CROSS_COMPILE ?= /HiSTBAndroidV600R003C00SPC021_git_0512/device/hisilicon/bigfish/sdk/tools/linux/toolchains/arm-histbv310-linux/bin/arm-histbv310-linux-
+ifndef KSRC
+KSRC := /HiSTBAndroidV600R003C00SPC021_git_0512/device/hisilicon/bigfish/sdk/source/kernel/linux-3.18.y
+KSRC += O=/HiSTBAndroidV600R003C00SPC021_git_0512/out/target/product/Hi3798MV200/obj/KERNEL_OBJ
+endif
+
+ifeq ($(CONFIG_RTL8822B), y)
+ifeq ($(CONFIG_SDIO_HCI), y)
+CONFIG_RTL8822BS ?= m
+USER_MODULE_NAME := rtl8822bs
+endif
+endif
+
+endif
+
+# Platform setting
+ifeq ($(CONFIG_PLATFORM_ARM_SPREADTRUM_6820), y)
+ifeq ($(CONFIG_ANDROID_2X), y)
+ccflags-y += -DANDROID_2X
+endif
+ccflags-y += -DCONFIG_PLATFORM_SPRD
+ccflags-y += -DPLATFORM_SPREADTRUM_6820
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ifeq ($(RTL871X), rtl8188e)
+ccflags-y += -DSOFTAP_PS_DURATION=50
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_PLATFORM_OPS
+_PLATFORM_FILES += platform/platform_sprd_sdio.o
+endif
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_SPREADTRUM_8810), y)
+ifeq ($(CONFIG_ANDROID_2X), y)
+ccflags-y += -DANDROID_2X
+endif
+ccflags-y += -DCONFIG_PLATFORM_SPRD
+ccflags-y += -DPLATFORM_SPREADTRUM_8810
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ifeq ($(RTL871X), rtl8188e)
+ccflags-y += -DSOFTAP_PS_DURATION=50
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_PLATFORM_OPS
+_PLATFORM_FILES += platform/platform_sprd_sdio.o
+endif
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_WMT), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_PLATFORM_OPS
+ifeq ($(CONFIG_SDIO_HCI), y)
+_PLATFORM_FILES += platform/platform_ARM_WMT_sdio.o
+endif
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/WonderMedia/wm8880-android4.4/toolchain/arm_201103_gcc4.5.2/mybin/arm_1103_le-
+KSRC := /home/android_sdk/WonderMedia/wm8880-android4.4/kernel4.4/
+MODULE_NAME :=8189es_kk
+endif
+
+ifeq ($(CONFIG_PLATFORM_RTK119X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+#ccflags-y += -DCONFIG_PLATFORM_ARM_SUN7I
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+#ccflags-y +=  -DCONFIG_QOS_OPTIMIZATION
+ccflags-y += -DCONFIG_QOS_OPTIMIZATION
+
+#ccflags-y += -DCONFIG_#PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+#_PLATFORM_FILES += platform/platform_ARM_SUNxI_usb.o
+endif
+ifeq ($(CONFIG_SDIO_HCI), y)
+_PLATFORM_FILES += platform/platform_ARM_SUNnI_sdio.o
+endif
+
+ARCH := arm
+
+# ==== Cross compile setting for Android 4.4 SDK =====
+#CROSS_COMPILE := arm-linux-gnueabihf-
+KVER  := 3.10.24
+#KSRC :=/home/android_sdk/Allwinner/a20/android-kitkat44/lichee/linux-3.4
+CROSS_COMPILE := /home/realtek/software_phoenix/phoenix/toolchain/usr/local/arm-2013.11/bin/arm-linux-gnueabihf-
+KSRC := /home/realtek/software_phoenix/linux-kernel
+MODULE_NAME := 8192eu
+
+endif
+
+ifeq ($(CONFIG_PLATFORM_RTK119X_AM), y)
+ccflags-y += -DCONFIG_PLATFORM_RTK119X_AM
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+ccflags-y += -DCONFIG_CONCURRENT_MODE -DCONFIG_FULL_CH_IN_P2P_HANDSHAKE
+ccflags-y += -DCONFIG_IFACE_NUMBER=3
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+endif
+
+ARCH := arm
+
+#CROSS_COMPILE := arm-linux-gnueabihf-
+KVER  := 3.10.24
+#KSRC :=
+CROSS_COMPILE :=
+endif
+
+ifeq ($(CONFIG_PLATFORM_RTK129X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DRTK_129X_PLATFORM
+ccflags-y += -DCONFIG_TRAFFIC_PROTECT
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+#ccflags-y += -DCONFIG_P2P_IPS -DCONFIG_QOS_OPTIMIZATION
+ccflags-y += -DCONFIG_QOS_OPTIMIZATION
+# Enable this for Android 5.0
+ccflags-y += -DCONFIG_RADIO_WORK
+ifeq ($(CONFIG_RTL8821C)$(CONFIG_SDIO_HCI),yy)
+ccflags-y += -DCONFIG_WAKEUP_GPIO_INPUT_MODE
+ccflags-y += -DCONFIG_BT_WAKE_HST_OPEN_DRAIN
+endif
+ccflags-y += -Wno-error=date-time
+# default setting for Android 7.0
+ifeq ($(RTK_ANDROID_VERSION), nougat)
+ccflags-y += -DRTW_P2P_GROUP_INTERFACE=1
+endif
+#ccflags-y += -DCONFIG_#PLATFORM_OPS
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+endif
+
+ARCH := arm64
+
+# ==== Cross compile setting for Android 4.4 SDK =====
+#CROSS_COMPILE := arm-linux-gnueabihf-
+#KVER  := 4.1.10
+#CROSS_COMPILE := $(CROSS)
+#KSRC := $(LINUX_KERNEL_PATH)
+CROSS_COMPILE := /home/android_sdk/DHC/trunk-6.0.0_r1-QA160627/phoenix/toolchain/asdk64-4.9.4-a53-EL-3.10-g2.19-a64nt-160307/bin/asdk64-linux-
+KSRC := /home/android_sdk/DHC/trunk-6.0.0_r1-QA160627/linux-kernel
+endif
+
+ifeq ($(CONFIG_PLATFORM_RTK390X), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_PLATFORM_RTK390X
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_RTW_NETIF_SG
+ifeq ($(CONFIG_USB_HCI), y)
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+endif
+
+ARCH:=rlx
+
+CROSS_COMPILE:=mips-linux-
+KSRC:= /home/realtek/share/Develop/IPCAM_SDK/RealSil/rts3901_sdk_v1.2_vanilla/linux-3.10
+
+endif
+
+ifeq ($(CONFIG_PLATFORM_NOVATEK_NT72668), y)
+ccflags-y += -DCONFIG_PLATFORM_NOVATEK_NT72668
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_RX
+ccflags-y += -DCONFIG_USE_USB_BUFFER_ALLOC_TX
+ARCH ?= arm
+CROSS_COMPILE := arm-linux-gnueabihf-
+KVER := 3.8.0
+KSRC := /Custom/Novatek/TCL/linux-3.8_header
+#KSRC := $(KERNELDIR)
+endif
+
+ifeq ($(CONFIG_PLATFORM_ARM_TCC8930_JB42), y)
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android 4.1, 4.2
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211 -DRTW_USE_CFG80211_STA_EVENT
+ARCH := arm
+CROSS_COMPILE := /home/android_sdk/Telechips/v13.05_r1-tcc-android-4.2.2_tcc893x-evm_build/prebuilts/gcc/linux-x86/arm/arm-eabi-4.6/bin/arm-eabi-
+KSRC := /home/android_sdk/Telechips/v13.05_r1-tcc-android-4.2.2_tcc893x-evm_build/kernel
+MODULE_NAME := wlan
+endif 
+
+ifeq ($(CONFIG_PLATFORM_RTL8197D), y)
+ccflags-y += -DCONFIG_BIG_ENDIAN -DCONFIG_PLATFORM_RTL8197D
+export DIR_LINUX=$(shell pwd)/../SDK/rlxlinux-sdk321-v50/linux-2.6.30
+ARCH ?= rlx
+CROSS_COMPILE:= $(DIR_LINUX)/../toolchain/rsdk-1.5.5-5281-EB-2.6.30-0.9.30.3-110714/bin/rsdk-linux-
+KSRC := $(DIR_LINUX)
+endif
+
+ifeq ($(CONFIG_PLATFORM_AML_S905), y)
+ccflags-y += -DCONFIG_PLATFORM_AML_S905
+ccflags-y += -DCONFIG_LITTLE_ENDIAN -fno-pic
+# default setting for Android
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211
+ccflags-y += -DRTW_USE_CFG80211_STA_EVENT
+# default setting for Android 5.x and later
+ccflags-y += -DCONFIG_RADIO_WORK
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+ccflags-y += -DCONFIG_PLATFORM_OPS
+_PLATFORM_FILES += platform/platform_aml_s905_sdio.o
+endif
+
+ARCH ?= arm64
+CROSS_COMPILE ?= /4.4_S905L_8822bs_compile/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux/bin/aarch64-linux-gnu-
+ifndef KSRC
+KSRC := /4.4_S905L_8822bs_compile/common
+# To locate output files in a separate directory.
+KSRC += O=/4.4_S905L_8822bs_compile/KERNEL_OBJ
+endif
+
+ifeq ($(CONFIG_RTL8822B), y)
+ifeq ($(CONFIG_SDIO_HCI), y)
+CONFIG_RTL8822BS ?= m
+USER_MODULE_NAME := 8822bs
+endif
+endif
+
+endif
+
+ifeq ($(CONFIG_PLATFORM_ZTE_ZX296716), y)
+ccflags-y += -Wno-error=date-time
+ccflags-y += -DCONFIG_PLATFORM_ZTE_ZX296716
+ccflags-y += -DCONFIG_LITTLE_ENDIAN
+# default setting for Android
+ccflags-y += -DCONFIG_CONCURRENT_MODE
+ccflags-y += -DCONFIG_IOCTL_CFG80211
+ccflags-y += -DRTW_USE_CFG80211_STA_EVENT
+# default setting for Android 5.x and later
+#ccflags-y += -DCONFIG_RADIO_WORK
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+# mark this temporarily
+#ccflags-y += -DCONFIG_PLATFORM_OPS
+#_PLATFORM_FILES += platform/platform_zte_zx296716_sdio.o
+endif
+
+ARCH ?= arm64
+CROSS_COMPILE ?=
+KSRC ?=
+
+ifeq ($(CONFIG_RTL8822B), y)
+ifeq ($(CONFIG_SDIO_HCI), y)
+CONFIG_RTL8822BS ?= m
+USER_MODULE_NAME := 8822bs
+endif
+endif
+
+endif
+
+########### CUSTOMER ################################
+ifeq ($(CONFIG_CUSTOMER_HUAWEI_GENERAL), y)
+CONFIG_CUSTOMER_HUAWEI = y
+endif
+
+ifeq ($(CONFIG_CUSTOMER_HUAWEI), y)
+ccflags-y += -DCONFIG_HUAWEI_PROC
+endif
+
+ifeq ($(CONFIG_MULTIDRV), y)
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+MODULE_NAME := rtw_sdio
+endif
+
+ifeq ($(CONFIG_USB_HCI), y)
+MODULE_NAME := rtw_usb
+endif
+
+ifeq ($(CONFIG_PCI_HCI), y)
+MODULE_NAME := rtw_pci
+endif
+
+
+endif
+
+USER_MODULE_NAME ?=
+ifneq ($(USER_MODULE_NAME),)
+MODULE_NAME := $(USER_MODULE_NAME)
+endif
+
+ccflags-y += $(USER_EXTRA_CFLAGS)
+
+ifneq ($(KERNELRELEASE),)
+
+########### this part for *.mk ############################
+include $(src)/hal/phydm/phydm.mk
+
+########### HAL_RTL8822B #################################
+ifeq ($(CONFIG_RTL8822B), y)
+include $(src)/rtl8822b.mk
+endif
+
+########### HAL_RTL8821C #################################
+ifeq ($(CONFIG_RTL8821C), y)
+include $(src)/rtl8821c.mk
+endif
+
+########### HAL_RTL8822C #################################
+ifeq ($(CONFIG_RTL8822C), y)
+include $(src)/rtl8822c.mk
+endif
+
+rtk_core :=	core/rtw_cmd.o \
+		core/rtw_security.o \
+		core/rtw_debug.o \
+		core/rtw_io.o \
+		core/rtw_ioctl_query.o \
+		core/rtw_ioctl_set.o \
+		core/rtw_ieee80211.o \
+		core/rtw_mlme.o \
+		core/rtw_mlme_ext.o \
+		core/rtw_mi.o \
+		core/rtw_wlan_util.o \
+		core/rtw_vht.o \
+		core/rtw_pwrctrl.o \
+		core/rtw_rf.o \
+		core/rtw_chplan.o \
+		core/rtw_recv.o \
+		core/rtw_sta_mgt.o \
+		core/rtw_ap.o \
+		core/mesh/rtw_mesh.o \
+		core/mesh/rtw_mesh_pathtbl.o \
+		core/mesh/rtw_mesh_hwmp.o \
+		core/rtw_xmit.o	\
+		core/rtw_p2p.o \
+		core/rtw_rson.o \
+		core/rtw_tdls.o \
+		core/rtw_br_ext.o \
+		core/rtw_iol.o \
+		core/rtw_sreset.o \
+		core/rtw_btcoex_wifionly.o \
+		core/rtw_btcoex.o \
+		core/rtw_beamforming.o \
+		core/rtw_odm.o \
+		core/rtw_rm.o \
+		core/rtw_rm_fsm.o \
+		core/efuse/rtw_efuse.o 
+
+ifeq ($(CONFIG_SDIO_HCI), y)
+rtk_core += core/rtw_sdio.o
+endif
+
+$(MODULE_NAME)-y += $(rtk_core)
+
+$(MODULE_NAME)-$(CONFIG_WAPI_SUPPORT) += core/rtw_wapi.o	\
+					core/rtw_wapi_sms4.o
+
+$(MODULE_NAME)-y += $(_OS_INTFS_FILES)
+$(MODULE_NAME)-y += $(_HAL_INTFS_FILES)
+$(MODULE_NAME)-y += $(_PHYDM_FILES)
+$(MODULE_NAME)-y += $(_BTC_FILES)
+$(MODULE_NAME)-y += $(_PLATFORM_FILES)
+
+$(MODULE_NAME)-$(CONFIG_MP_INCLUDED) += core/rtw_mp.o
+
+ifeq ($(CONFIG_RTL8723B), y)
+$(MODULE_NAME)-$(CONFIG_MP_INCLUDED)+= core/rtw_bt_mp.o
+endif
+
+obj-$(CONFIG_RTL8189FS) := $(MODULE_NAME).o
+
+else
+
+export CONFIG_RTL8189FS = m
 
 all: modules
 
-# When we're building modules with modversions, we need to consider
-# the built-in objects during the descend as well, in order to
-# make sure the checksums are up to date before we record them.
-ifdef CONFIG_MODVERSIONS
-  KBUILD_BUILTIN := 1
-endif
-
-# Build modules
-#
-
-# *.ko are usually independent of vmlinux, but CONFIG_DEBUG_INFO_BTF_MODULES
-# is an exception.
-ifdef CONFIG_DEBUG_INFO_BTF_MODULES
-KBUILD_BUILTIN := 1
-modules: vmlinux
-endif
-
-modules: modules_prepare
-
-# Target to prepare building external modules
-modules_prepare: prepare
-	$(Q)$(MAKE) $(build)=scripts scripts/module.lds
-
-endif # CONFIG_MODULES
-
-###
-# Cleaning is done on three levels.
-# make clean     Delete most generated files
-#                Leave enough to build external modules
-# make mrproper  Delete the current configuration, and all generated files
-# make distclean Remove editor backup files, patch leftover files and the like
-
-# Directories & files removed with 'make clean'
-CLEAN_FILES += vmlinux.symvers modules-only.symvers \
-	       modules.builtin modules.builtin.modinfo modules.nsdeps \
-	       modules.builtin.ranges vmlinux.o.map \
-	       compile_commands.json rust/test \
-	       rust-project.json .vmlinux.objs .vmlinux.export.c
-
-# Directories & files removed with 'make mrproper'
-MRPROPER_FILES += include/config include/generated          \
-		  arch/$(SRCARCH)/include/generated .objdiff \
-		  debian snap tar-install PKGBUILD pacman \
-		  .config .config.old .version \
-		  Module.symvers \
-		  certs/signing_key.pem \
-		  certs/x509.genkey \
-		  vmlinux-gdb.py \
-		  rpmbuild \
-		  rust/libmacros.so
-
-# clean - Delete most, but leave enough to build external modules
-#
-clean: private rm-files := $(CLEAN_FILES)
-
-PHONY += archclean vmlinuxclean
-
-vmlinuxclean:
-	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/link-vmlinux.sh clean
-	$(Q)$(if $(ARCH_POSTLINK), $(MAKE) -f $(ARCH_POSTLINK) clean)
-
-clean: archclean vmlinuxclean resolve_btfids_clean
-
-# mrproper - Delete all generated files, including .config
-#
-mrproper: private rm-files := $(MRPROPER_FILES)
-mrproper-dirs      := $(addprefix _mrproper_,scripts)
-
-PHONY += $(mrproper-dirs) mrproper
-$(mrproper-dirs):
-	$(Q)$(MAKE) $(clean)=$(patsubst _mrproper_%,%,$@)
-
-mrproper: clean $(mrproper-dirs)
-	$(call cmd,rmfiles)
-	@find . $(RCS_FIND_IGNORE) \
-		\( -name '*.rmeta' \) \
-		-type f -print | xargs rm -f
-
-# distclean
-#
-PHONY += distclean
-
-distclean: mrproper
-	@find . $(RCS_FIND_IGNORE) \
-		\( -name '*.orig' -o -name '*.rej' -o -name '*~' \
-		-o -name '*.bak' -o -name '#*#' -o -name '*%' \
-		-o -name 'core' -o -name tags -o -name TAGS -o -name 'cscope*' \
-		-o -name GPATH -o -name GRTAGS -o -name GSYMS -o -name GTAGS \) \
-		-type f -print | xargs rm -f
-
-
-# Packaging of the kernel to various formats
-# ---------------------------------------------------------------------------
-
-%src-pkg: FORCE
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.package $@
-%pkg: include/config/kernel.release FORCE
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.package $@
-
-# Brief documentation of the typical targets used
-# ---------------------------------------------------------------------------
-
-boards := $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*_defconfig)
-boards := $(sort $(notdir $(boards)))
-board-dirs := $(dir $(wildcard $(srctree)/arch/$(SRCARCH)/configs/*/*_defconfig))
-board-dirs := $(sort $(notdir $(board-dirs:/=)))
-
-PHONY += help
-help:
-	@echo  'Cleaning targets:'
-	@echo  '  clean		  - Remove most generated files but keep the config and'
-	@echo  '                    enough build support to build external modules'
-	@echo  '  mrproper	  - Remove all generated files + config + various backup files'
-	@echo  '  distclean	  - mrproper + remove editor backup and patch files'
-	@echo  ''
-	@$(MAKE) -f $(srctree)/scripts/kconfig/Makefile help
-	@echo  ''
-	@echo  'Other generic targets:'
-	@echo  '  all		  - Build all targets marked with [*]'
-	@echo  '* vmlinux	  - Build the bare kernel'
-	@echo  '* modules	  - Build all modules'
-	@echo  '  modules_install - Install all modules to INSTALL_MOD_PATH (default: /)'
-	@echo  '  vdso_install    - Install unstripped vdso to INSTALL_MOD_PATH (default: /)'
-	@echo  '  dir/            - Build all files in dir and below'
-	@echo  '  dir/file.[ois]  - Build specified target only'
-	@echo  '  dir/file.ll     - Build the LLVM assembly file'
-	@echo  '                    (requires compiler support for LLVM assembly generation)'
-	@echo  '  dir/file.lst    - Build specified mixed source/assembly target only'
-	@echo  '                    (requires a recent binutils and recent build (System.map))'
-	@echo  '  dir/file.ko     - Build module including final link'
-	@echo  '  modules_prepare - Set up for building external modules'
-	@echo  '  tags/TAGS	  - Generate tags file for editors'
-	@echo  '  cscope	  - Generate cscope index'
-	@echo  '  gtags           - Generate GNU GLOBAL index'
-	@echo  '  kernelrelease	  - Output the release version string (use with make -s)'
-	@echo  '  kernelversion	  - Output the version stored in Makefile (use with make -s)'
-	@echo  '  image_name	  - Output the image name (use with make -s)'
-	@echo  '  headers_install - Install sanitised kernel headers to INSTALL_HDR_PATH'; \
-	 echo  '                    (default: $(INSTALL_HDR_PATH))'; \
-	 echo  ''
-	@echo  'Static analysers:'
-	@echo  '  checkstack      - Generate a list of stack hogs and consider all functions'
-	@echo  '                    with a stack size larger than MINSTACKSIZE (default: 100)'
-	@echo  '  versioncheck    - Sanity check on version.h usage'
-	@echo  '  includecheck    - Check for duplicate included header files'
-	@echo  '  export_report   - List the usages of all exported symbols'
-	@echo  '  headerdep       - Detect inclusion cycles in headers'
-	@echo  '  coccicheck      - Check with Coccinelle'
-	@echo  '  clang-analyzer  - Check with clang static analyzer'
-	@echo  '  clang-tidy      - Check with clang-tidy'
-	@echo  ''
-	@echo  'Tools:'
-	@echo  '  nsdeps          - Generate missing symbol namespace dependencies'
-	@echo  ''
-	@echo  'Kernel selftest:'
-	@echo  '  kselftest         - Build and run kernel selftest'
-	@echo  '                      Build, install, and boot kernel before'
-	@echo  '                      running kselftest on it'
-	@echo  '                      Run as root for full coverage'
-	@echo  '  kselftest-all     - Build kernel selftest'
-	@echo  '  kselftest-install - Build and install kernel selftest'
-	@echo  '  kselftest-clean   - Remove all generated kselftest files'
-	@echo  '  kselftest-merge   - Merge all the config dependencies of'
-	@echo  '		      kselftest to existing .config.'
-	@echo  ''
-	@echo  'Rust targets:'
-	@echo  '  rustavailable   - Checks whether the Rust toolchain is'
-	@echo  '		    available and, if not, explains why.'
-	@echo  '  rustfmt	  - Reformat all the Rust code in the kernel'
-	@echo  '  rustfmtcheck	  - Checks if all the Rust code in the kernel'
-	@echo  '		    is formatted, printing a diff otherwise.'
-	@echo  '  rustdoc	  - Generate Rust documentation'
-	@echo  '		    (requires kernel .config)'
-	@echo  '  rusttest        - Runs the Rust tests'
-	@echo  '                    (requires kernel .config; downloads external repos)'
-	@echo  '  rust-analyzer	  - Generate rust-project.json rust-analyzer support file'
-	@echo  '		    (requires kernel .config)'
-	@echo  '  dir/file.[os]   - Build specified target only'
-	@echo  '  dir/file.rsi    - Build macro expanded source, similar to C preprocessing.'
-	@echo  '                    Run with RUSTFMT=n to skip reformatting if needed.'
-	@echo  '                    The output is not intended to be compilable.'
-	@echo  '  dir/file.ll     - Build the LLVM assembly file'
-	@echo  ''
-	@$(if $(dtstree), \
-		echo 'Devicetree:'; \
-		echo '* dtbs               - Build device tree blobs for enabled boards'; \
-		echo '  dtbs_install       - Install dtbs to $(INSTALL_DTBS_PATH)'; \
-		echo '  dt_binding_check   - Validate device tree binding documents and examples'; \
-		echo '  dt_binding_schemas - Build processed device tree binding schemas'; \
-		echo '  dtbs_check         - Validate device tree source files';\
-		echo '')
-
-	@echo 'Userspace tools targets:'
-	@echo '  use "make tools/help"'
-	@echo '  or  "cd tools; make help"'
-	@echo  ''
-	@echo  'Kernel packaging:'
-	@$(MAKE) -f $(srctree)/scripts/Makefile.package help
-	@echo  ''
-	@echo  'Documentation targets:'
-	@$(MAKE) -f $(srctree)/Documentation/Makefile dochelp
-	@echo  ''
-	@echo  'Architecture-specific targets ($(SRCARCH)):'
-	@$(or $(archhelp),\
-		echo '  No architecture-specific help defined for $(SRCARCH)')
-	@echo  ''
-	@$(if $(boards), \
-		$(foreach b, $(boards), \
-		printf "  %-27s - Build for %s\\n" $(b) $(subst _defconfig,,$(b));) \
-		echo '')
-	@$(if $(board-dirs), \
-		$(foreach b, $(board-dirs), \
-		printf "  %-16s - Show %s-specific targets\\n" help-$(b) $(b);) \
-		printf "  %-16s - Show all of the above\\n" help-boards; \
-		echo '')
-
-	@echo  '  make V=n   [targets] 1: verbose build'
-	@echo  '                       2: give reason for rebuild of target'
-	@echo  '                       V=1 and V=2 can be combined with V=12'
-	@echo  '  make O=dir [targets] Locate all output files in "dir", including .config'
-	@echo  '  make C=1   [targets] Check re-compiled c source with $$CHECK'
-	@echo  '                       (sparse by default)'
-	@echo  '  make C=2   [targets] Force check of all c source with $$CHECK'
-	@echo  '  make RECORDMCOUNT_WARN=1 [targets] Warn about ignored mcount sections'
-	@echo  '  make W=n   [targets] Enable extra build checks, n=1,2,3,c,e where'
-	@echo  '		1: warnings which may be relevant and do not occur too often'
-	@echo  '		2: warnings which occur quite often but may still be relevant'
-	@echo  '		3: more obscure warnings, can most likely be ignored'
-	@echo  '		c: extra checks in the configuration stage (Kconfig)'
-	@echo  '		e: warnings are being treated as errors'
-	@echo  '		Multiple levels can be combined with W=12 or W=123'
-	@$(if $(dtstree), \
-		echo '  make CHECK_DTBS=1 [targets] Check all generated dtb files against schema'; \
-		echo '         This can be applied both to "dtbs" and to individual "foo.dtb" targets' ; \
-		)
-	@echo  ''
-	@echo  'Execute "make" or "make all" to build all targets marked with [*] '
-	@echo  'For further info see the ./README file'
-
-
-help-board-dirs := $(addprefix help-,$(board-dirs))
-
-help-boards: $(help-board-dirs)
-
-boards-per-dir = $(sort $(notdir $(wildcard $(srctree)/arch/$(SRCARCH)/configs/$*/*_defconfig)))
-
-$(help-board-dirs): help-%:
-	@echo  'Architecture-specific targets ($(SRCARCH) $*):'
-	@$(if $(boards-per-dir), \
-		$(foreach b, $(boards-per-dir), \
-		printf "  %-24s - Build for %s\\n" $*/$(b) $(subst _defconfig,,$(b));) \
-		echo '')
-
-
-# Documentation targets
-# ---------------------------------------------------------------------------
-DOC_TARGETS := xmldocs latexdocs pdfdocs htmldocs epubdocs cleandocs \
-	       linkcheckdocs dochelp refcheckdocs texinfodocs infodocs
-PHONY += $(DOC_TARGETS)
-$(DOC_TARGETS):
-	$(Q)$(MAKE) $(build)=Documentation $@
-
-
-# Rust targets
-# ---------------------------------------------------------------------------
-
-# "Is Rust available?" target
-PHONY += rustavailable
-rustavailable:
-	+$(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust_is_available.sh && echo "Rust is available!"
-
-# Documentation target
-#
-# Using the singular to avoid running afoul of `no-dot-config-targets`.
-PHONY += rustdoc
-rustdoc: prepare
-	$(Q)$(MAKE) $(build)=rust $@
-
-# Testing target
-PHONY += rusttest
-rusttest: prepare
-	$(Q)$(MAKE) $(build)=rust $@
-
-# Formatting targets
-PHONY += rustfmt rustfmtcheck
-
-# We skip `rust/alloc` since we want to minimize the diff w.r.t. upstream.
-#
-# We match using absolute paths since `find` does not resolve them
-# when matching, which is a problem when e.g. `srctree` is `..`.
-# We `grep` afterwards in order to remove the directory entry itself.
-rustfmt:
-	$(Q)find $(abs_srctree) -type f -name '*.rs' \
-		-o -path $(abs_srctree)/rust/alloc -prune \
-		-o -path $(abs_objtree)/rust/test -prune \
-		| grep -Fv $(abs_srctree)/rust/alloc \
-		| grep -Fv $(abs_objtree)/rust/test \
-		| grep -Fv generated \
-		| xargs $(RUSTFMT) $(rustfmt_flags)
-
-rustfmtcheck: rustfmt_flags = --check
-rustfmtcheck: rustfmt
-
-# Misc
-# ---------------------------------------------------------------------------
-
-PHONY += misc-check
-misc-check:
-	$(Q)$(srctree)/scripts/misc-check
-
-all: misc-check
-
-PHONY += scripts_gdb
-scripts_gdb: prepare0
-	$(Q)$(MAKE) $(build)=scripts/gdb
-	$(Q)ln -fsn $(abspath $(srctree)/scripts/gdb/vmlinux-gdb.py)
-
-ifdef CONFIG_GDB_SCRIPTS
-all: scripts_gdb
-endif
-
-else # KBUILD_EXTMOD
-
-filechk_kernel.release = echo $(KERNELRELEASE)
-
-###
-# External module support.
-# When building external modules the kernel used as basis is considered
-# read-only, and no consistency checks are made and the make
-# system is not used on the basis kernel. If updates are required
-# in the basis kernel ordinary make commands (without M=...) must be used.
-
-# We are always building only modules.
-KBUILD_BUILTIN :=
-KBUILD_MODULES := 1
-
-build-dir := $(KBUILD_EXTMOD)
-
-compile_commands.json: $(extmod_prefix)compile_commands.json
-PHONY += compile_commands.json
-
-clean-dirs := $(KBUILD_EXTMOD)
-clean: private rm-files := $(KBUILD_EXTMOD)/Module.symvers $(KBUILD_EXTMOD)/modules.nsdeps \
-	$(KBUILD_EXTMOD)/compile_commands.json
-
-PHONY += prepare
-# now expand this into a simple variable to reduce the cost of shell evaluations
-prepare: CC_VERSION_TEXT := $(CC_VERSION_TEXT)
-prepare:
-	@if [ "$(CC_VERSION_TEXT)" != "$(CONFIG_CC_VERSION_TEXT)" ]; then \
-		echo >&2 "warning: the compiler differs from the one used to build the kernel"; \
-		echo >&2 "  The kernel was built by: $(CONFIG_CC_VERSION_TEXT)"; \
-		echo >&2 "  You are using:           $(CC_VERSION_TEXT)"; \
-	fi
-
-PHONY += help
-help:
-	@echo  '  Building external modules.'
-	@echo  '  Syntax: make -C path/to/kernel/src M=$$PWD target'
-	@echo  ''
-	@echo  '  modules         - default target, build the module(s)'
-	@echo  '  modules_install - install the module'
-	@echo  '  clean           - remove generated files in module directory only'
-	@echo  '  rust-analyzer	  - generate rust-project.json rust-analyzer support file'
-	@echo  ''
-
-ifndef CONFIG_MODULES
-modules modules_install: __external_modules_error
-__external_modules_error:
-	@echo >&2 '***'
-	@echo >&2 '*** The present kernel disabled CONFIG_MODULES.'
-	@echo >&2 '*** You cannot build or install external modules.'
-	@echo >&2 '***'
-	@false
-endif
-
-endif # KBUILD_EXTMOD
-
-# ---------------------------------------------------------------------------
-# Modules
-
-PHONY += modules modules_install modules_sign modules_prepare
-
-modules_install:
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modinst \
-	sign-only=$(if $(filter modules_install,$(MAKECMDGOALS)),,y)
-
-ifeq ($(CONFIG_MODULE_SIG),y)
-# modules_sign is a subset of modules_install.
-# 'make modules_install modules_sign' is equivalent to 'make modules_install'.
-modules_sign: modules_install
-	@:
-else
-modules_sign:
-	@echo >&2 '***'
-	@echo >&2 '*** CONFIG_MODULE_SIG is disabled. You cannot sign modules.'
-	@echo >&2 '***'
-	@false
-endif
-
-ifdef CONFIG_MODULES
-
-$(MODORDER): $(build-dir)
-	@:
-
-# KBUILD_MODPOST_NOFINAL can be set to skip the final link of modules.
-# This is solely useful to speed up test compiles.
-modules: modpost
-ifneq ($(KBUILD_MODPOST_NOFINAL),1)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modfinal
-endif
-
-PHONY += modules_check
-modules_check: $(MODORDER)
-	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/modules-check.sh $<
-
-else # CONFIG_MODULES
-
 modules:
-	@:
+	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KSRC) M=$(shell pwd)  modules
 
-KBUILD_MODULES :=
+strip:
+	$(CROSS_COMPILE)strip $(MODULE_NAME).ko --strip-unneeded
 
-endif # CONFIG_MODULES
+install:
+	install -p -m 644 $(MODULE_NAME).ko  $(MODDESTDIR)
+	/sbin/depmod -a ${KVER}
 
-PHONY += modpost
-modpost: $(if $(single-build),, $(if $(KBUILD_BUILTIN), vmlinux.o)) \
-	 $(if $(KBUILD_MODULES), modules_check)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
+uninstall:
+	rm -f $(MODDESTDIR)/$(MODULE_NAME).ko
+	/sbin/depmod -a ${KVER}
 
-# Single targets
-# ---------------------------------------------------------------------------
-# To build individual files in subdirectories, you can do like this:
-#
-#   make foo/bar/baz.s
-#
-# The supported suffixes for single-target are listed in 'single-targets'
-#
-# To build only under specific subdirectories, you can do like this:
-#
-#   make foo/bar/baz/
-
-ifdef single-build
-
-# .ko is special because modpost is needed
-single-ko := $(sort $(filter %.ko, $(MAKECMDGOALS)))
-single-no-ko := $(filter-out $(single-ko), $(MAKECMDGOALS)) \
-		$(foreach x, o mod, $(patsubst %.ko, %.$x, $(single-ko)))
-
-$(single-ko): single_modules
-	@:
-$(single-no-ko): $(build-dir)
-	@:
-
-# Remove MODORDER when done because it is not the real one.
-PHONY += single_modules
-single_modules: $(single-no-ko) modules_prepare
-	$(Q){ $(foreach m, $(single-ko), echo $(extmod_prefix)$(m:%.ko=%.o);) } > $(MODORDER)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost
-ifneq ($(KBUILD_MODPOST_NOFINAL),1)
-	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modfinal
+backup_rtlwifi:
+	@echo "Making backup rtlwifi drivers"
+ifneq (,$(wildcard $(STAGINGMODDIR)/rtl*))
+	@tar cPf $(wildcard $(STAGINGMODDIR))/backup_rtlwifi_driver.tar $(wildcard $(STAGINGMODDIR)/rtl*)
+	@rm -rf $(wildcard $(STAGINGMODDIR)/rtl*)
 endif
-	$(Q)rm -f $(MODORDER)
-
-single-goals := $(addprefix $(build-dir)/, $(single-no-ko))
-
-KBUILD_MODULES := 1
-
+ifneq (,$(wildcard $(MODDESTDIR)realtek))
+	@tar cPf $(MODDESTDIR)backup_rtlwifi_driver.tar $(MODDESTDIR)realtek
+	@rm -fr $(MODDESTDIR)realtek
 endif
+ifneq (,$(wildcard $(MODDESTDIR)rtl*))
+	@tar cPf $(MODDESTDIR)../backup_rtlwifi_driver.tar $(wildcard $(MODDESTDIR)rtl*)
+	@rm -fr $(wildcard $(MODDESTDIR)rtl*)
+endif
+	@/sbin/depmod -a ${KVER}
+	@echo "Please reboot your system"
 
-# Preset locale variables to speed up the build process. Limit locale
-# tweaks to this spot to avoid wrong language settings when running
-# make menuconfig etc.
-# Error messages still appears in the original language
-PHONY += $(build-dir)
-$(build-dir): prepare
-	$(Q)$(MAKE) $(build)=$@ need-builtin=1 need-modorder=1 $(single-goals)
+restore_rtlwifi:
+	@echo "Restoring backups"
+ifneq (,$(wildcard $(STAGINGMODDIR)/backup_rtlwifi_driver.tar))
+	@tar xPf $(STAGINGMODDIR)/backup_rtlwifi_driver.tar
+	@rm $(STAGINGMODDIR)/backup_rtlwifi_driver.tar
+endif
+ifneq (,$(wildcard $(MODDESTDIR)backup_rtlwifi_driver.tar))
+	@tar xPf $(MODDESTDIR)backup_rtlwifi_driver.tar
+	@rm $(MODDESTDIR)backup_rtlwifi_driver.tar
+endif
+ifneq (,$(wildcard $(MODDESTDIR)../backup_rtlwifi_driver.tar))
+	@tar xPf $(MODDESTDIR)../backup_rtlwifi_driver.tar
+	@rm $(MODDESTDIR)../backup_rtlwifi_driver.tar
+endif
+	@/sbin/depmod -a ${KVER}
+	@echo "Please reboot your system"
 
-clean-dirs := $(addprefix _clean_, $(clean-dirs))
-PHONY += $(clean-dirs) clean
-$(clean-dirs):
-	$(Q)$(MAKE) $(clean)=$(patsubst _clean_%,%,$@)
+config_r:
+	@echo "make config"
+	/bin/bash script/Configure script/config.in
 
-clean: $(clean-dirs)
-	$(call cmd,rmfiles)
-	@find $(or $(KBUILD_EXTMOD), .) $(RCS_FIND_IGNORE) \
-		\( -name '*.[aios]' -o -name '*.rsi' -o -name '*.ko' -o -name '.*.cmd' \
-		-o -name '*.ko.*' \
-		-o -name '*.dtb' -o -name '*.dtbo' \
-		-o -name '*.dtb.S' -o -name '*.dtbo.S' \
-		-o -name '*.dt.yaml' -o -name 'dtbs-list' \
-		-o -name '*.dwo' -o -name '*.lst' \
-		-o -name '*.su' -o -name '*.mod' \
-		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \
-		-o -name '*.lex.c' -o -name '*.tab.[ch]' \
-		-o -name '*.asn1.[ch]' \
-		-o -name '*.symtypes' -o -name 'modules.order' \
-		-o -name '*.c.[012]*.*' \
-		-o -name '*.ll' \
-		-o -name '*.gcno' \
-		\) -type f -print \
-		-o -name '.tmp_*' -print \
-		| xargs rm -rf
 
-# Generate tags for editors
-# ---------------------------------------------------------------------------
-quiet_cmd_tags = GEN     $@
-      cmd_tags = $(BASH) $(srctree)/scripts/tags.sh $@
+.PHONY: modules clean
 
-tags TAGS cscope gtags: FORCE
-	$(call cmd,tags)
-
-# Generate rust-project.json (a file that describes the structure of non-Cargo
-# Rust projects) for rust-analyzer (an implementation of the Language Server
-# Protocol).
-PHONY += rust-analyzer
-rust-analyzer:
-	+$(Q)$(CONFIG_SHELL) $(srctree)/scripts/rust_is_available.sh
-	$(Q)$(MAKE) $(build)=rust $@
-
-# Script to generate missing namespace dependencies
-# ---------------------------------------------------------------------------
-
-PHONY += nsdeps
-nsdeps: export KBUILD_NSDEPS=1
-nsdeps: modules
-	$(Q)$(CONFIG_SHELL) $(srctree)/scripts/nsdeps
-
-# Clang Tooling
-# ---------------------------------------------------------------------------
-
-quiet_cmd_gen_compile_commands = GEN     $@
-      cmd_gen_compile_commands = $(PYTHON3) $< -a $(AR) -o $@ $(filter-out $<, $(real-prereqs))
-
-$(extmod_prefix)compile_commands.json: $(srctree)/scripts/clang-tools/gen_compile_commands.py \
-	$(if $(KBUILD_EXTMOD),, vmlinux.a $(KBUILD_VMLINUX_LIBS)) \
-	$(if $(CONFIG_MODULES), $(MODORDER)) FORCE
-	$(call if_changed,gen_compile_commands)
-
-targets += $(extmod_prefix)compile_commands.json
-
-PHONY += clang-tidy clang-analyzer
-
-ifdef CONFIG_CC_IS_CLANG
-quiet_cmd_clang_tools = CHECK   $<
-      cmd_clang_tools = $(PYTHON3) $(srctree)/scripts/clang-tools/run-clang-tools.py $@ $<
-
-clang-tidy clang-analyzer: $(extmod_prefix)compile_commands.json
-	$(call cmd,clang_tools)
-else
-clang-tidy clang-analyzer:
-	@echo "$@ requires CC=clang" >&2
-	@false
+clean:
+	#$(MAKE) -C $(KSRC) M=$(shell pwd) clean
+	cd hal ; rm -fr */*/*/*.mod.c */*/*/*.mod */*/*/*.o */*/*/.*.cmd */*/*/*.ko
+	cd hal ; rm -fr */*/*.mod.c */*/*.mod */*/*.o */*/.*.cmd */*/*.ko
+	cd hal ; rm -fr */*.mod.c */*.mod */*.o */.*.cmd */*.ko
+	cd hal ; rm -fr *.mod.c *.mod *.o .*.cmd *.ko
+	cd core ; rm -fr */*.mod.c */*.mod */*.o */.*.cmd */*.ko
+	cd core ; rm -fr *.mod.c *.mod *.o .*.cmd *.ko
+	cd os_dep/linux ; rm -fr *.mod.c *.mod *.o .*.cmd *.ko
+	cd os_dep ; rm -fr *.mod.c *.mod *.o .*.cmd *.ko
+	cd platform ; rm -fr *.mod.c *.mod *.o .*.cmd *.ko
+	rm -fr Module.symvers ; rm -fr Module.markers ; rm -fr modules.order
+	rm -fr *.mod.c *.mod *.o .*.cmd *.ko *~
+	rm -fr .tmp_versions
 endif
 
-# Scripts to check various things for consistency
-# ---------------------------------------------------------------------------
-
-PHONY += includecheck versioncheck coccicheck export_report
-
-includecheck:
-	find $(srctree)/* $(RCS_FIND_IGNORE) \
-		-name '*.[hcS]' -type f -print | sort \
-		| xargs $(PERL) -w $(srctree)/scripts/checkincludes.pl
-
-versioncheck:
-	find $(srctree)/* $(RCS_FIND_IGNORE) \
-		-name '*.[hcS]' -type f -print | sort \
-		| xargs $(PERL) -w $(srctree)/scripts/checkversion.pl
-
-coccicheck:
-	$(Q)$(BASH) $(srctree)/scripts/$@
-
-export_report:
-	$(PERL) $(srctree)/scripts/export_report.pl
-
-PHONY += checkstack kernelrelease kernelversion image_name
-
-# UML needs a little special treatment here.  It wants to use the host
-# toolchain, so needs $(SUBARCH) passed to checkstack.pl.  Everyone
-# else wants $(ARCH), including people doing cross-builds, which means
-# that $(SUBARCH) doesn't work here.
-ifeq ($(ARCH), um)
-CHECKSTACK_ARCH := $(SUBARCH)
-else
-CHECKSTACK_ARCH := $(ARCH)
-endif
-MINSTACKSIZE	?= 100
-checkstack:
-	$(OBJDUMP) -d vmlinux $$(find . -name '*.ko') | \
-	$(PERL) $(srctree)/scripts/checkstack.pl $(CHECKSTACK_ARCH) $(MINSTACKSIZE)
-
-kernelrelease:
-	@$(filechk_kernel.release)
-
-kernelversion:
-	@echo $(KERNELVERSION)
-
-image_name:
-	@echo $(KBUILD_IMAGE)
-
-PHONY += run-command
-run-command:
-	$(Q)$(KBUILD_RUN_COMMAND)
-
-quiet_cmd_rmfiles = $(if $(wildcard $(rm-files)),CLEAN   $(wildcard $(rm-files)))
-      cmd_rmfiles = rm -rf $(rm-files)
-
-# read saved command lines for existing targets
-existing-targets := $(wildcard $(sort $(targets)))
-
--include $(foreach f,$(existing-targets),$(dir $(f)).$(notdir $(f)).cmd)
-
-endif # config-build
-endif # mixed-build
-endif # need-sub-make
-
-PHONY += FORCE
-FORCE:
-
-# Declare the contents of the PHONY variable as phony.  We keep that
-# information in a variable so we can use it in if_changed and friends.
-.PHONY: $(PHONY)
+# For compatibility with kernels prior to 2.6.24.
+EXTRA_CFLAGS += $(ccflags-y)
+EXTRA_LDFLAGS += $(ldflags-y)
