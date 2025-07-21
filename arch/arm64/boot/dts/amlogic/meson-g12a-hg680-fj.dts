@@ -1,4 +1,5 @@
 /* @sib0ndt */
+/* @wyref */
 
 /dts-v1/;
 
@@ -6,7 +7,7 @@
 
 / {
 	compatible = "hg680,fj", "amlogic,g12a";
-	model = "HG680-FJ";
+	model = "HG680-FJ ✧ s905x2";
 
 	vddgpu: regulator-vddgpu {
 		compatible = "regulator-fixed";
@@ -102,6 +103,10 @@ reserved-memory {
 		device_type = "memory";
 		reg = <0x0 0x0 0x0 0x80000000>;
 	};
+};
+
+&vddao_3v3 {
+    vin-supply = <&dc_in>;
 };
 
 &pwm_ef {
@@ -205,4 +210,3 @@ reserved-memory {
     vusb_d-supply = <&vusb_d_reg>;
     vusb_a-supply = <&vusb_a_reg>;
 };
-
