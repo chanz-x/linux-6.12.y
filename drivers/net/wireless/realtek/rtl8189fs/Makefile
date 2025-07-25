@@ -2119,6 +2119,7 @@ ifeq ($(CONFIG_PLATFORM_AML_S905), y)
 ccflags-y += -DCONFIG_PLATFORM_AML_S905
 ccflags-y += -DCONFIG_LITTLE_ENDIAN -fno-pic
 # default setting for Android
+ccflags-y += -DCONFIG_CONCURRENT_MODE
 ccflags-y += -DCONFIG_IOCTL_CFG80211
 ccflags-y += -DRTW_USE_CFG80211_STA_EVENT
 # default setting for Android 5.x and later
